@@ -10,17 +10,13 @@
     --glass-brd: rgba(255,255,255,.22);
     --glass-sh: 0 10px 40px rgba(0,0,0,.24);
     --text:#0b1220;
-    --ok:#10b981;
-    --bad:#ef4444;
+    --ok:#10b981; --bad:#ef4444;
     --slot:#ffffff22;
-    --pill:#ffffffaa;
-    --pill-brd:#ffffff88;
-    --btn:#ffffffcc;
-    --btn-brd:#ffffff88;
+    --pill:#ffffffaa; --pill-brd:#ffffff88;
+    --btn:#ffffffcc; --btn-brd:#ffffff88;
     --score-grad: linear-gradient(90deg, #22d3ee, #a78bfa);
     --brand-grad: linear-gradient(90deg, #22d3ee, #a78bfa, #f472b6);
-    --chip-dark: rgba(0,0,0,.45);
-    --chip-dark-brd: rgba(255,255,255,.35);
+    --chip-dark: rgba(0,0,0,.45); --chip-dark-brd: rgba(255,255,255,.35);
   }
   html,body { height:100%; margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color:var(--text); }
   body{
@@ -28,110 +24,66 @@
                 radial-gradient(900px 700px at 85% 15%, #dbeafe, transparent 60%),
                 radial-gradient(900px 700px at 20% 85%, #fce7f3, transparent 60%),
                 linear-gradient(120deg, #22d3ee 0%, #a78bfa 45%, #f472b6 100%);
-    background-size: 140% 140%;
-    animation: bgMove 18s ease-in-out infinite alternate;
+    background-size: 140% 140%; animation: bgMove 18s ease-in-out infinite alternate;
     display:flex; align-items:center; justify-content:center; padding:min(28px,5vw);
   }
   @keyframes bgMove{ 0%{ background-position: 0% 40%; } 100%{ background-position: 100% 60%; } }
 
   .wrap{ width:min(1000px, 96vw); }
-  .card{
-    position:relative; border-radius:28px;
-    padding: clamp(18px, 3vw, 32px);
-    backdrop-filter: blur(14px) saturate(130%);
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-brd);
-    box-shadow: var(--glass-sh);
-    overflow:hidden;
-  }
+  .card{ position:relative; border-radius:28px; padding: clamp(18px, 3vw, 32px);
+    backdrop-filter: blur(14px) saturate(130%); background: var(--glass-bg); border: 1px solid var(--glass-brd); box-shadow: var(--glass-sh); overflow:hidden; }
   .blob{ position:absolute; filter: blur(50px); opacity:.45; pointer-events:none; }
   .blob.b1{ width:300px; height:300px; background:#fecaca; top:-80px; left:-60px; border-radius:50%; }
   .blob.b2{ width:360px; height:360px; background:#bfdbfe; bottom:-90px; right:-80px; border-radius:50%; }
   .blob.b3{ width:260px; height:260px; background:#f5d0fe; top:40%; left:-70px; border-radius:50%; }
 
-  h1{ margin:0; font-weight:1000; font-size: clamp(24px, 4.8vw, 44px); letter-spacing:.2px; color:#0b1220; }
-  .title-cap{
-    display:inline-flex; align-items:center; gap:.5ch;
-    padding:8px 14px; border-radius:999px;
-    background: var(--brand-grad);
-    color:#fff; box-shadow: 0 6px 20px rgba(0,0,0,.25);
-    font-weight:1000; letter-spacing:.2px;
-  }
+  h1{ margin:0; font-weight:1000; font-size: clamp(24px, 4.8vw, 44px); }
+  .title-cap{ display:inline-flex; align-items:center; gap:.5ch; padding:8px 14px; border-radius:999px; background: var(--brand-grad); color:#fff; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
   .subtitle{ margin:10px 0 16px; color:#0b1220cc; font-weight:600; font-size:clamp(14px, 2.6vw, 16px); }
   .row-split { display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
 
   .controls{ display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:10px; }
-  .pill{
-    display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px;
-    background: var(--pill); color:#0b1220; border:1px solid var(--pill-brd); font-weight:900;
-    backdrop-filter: blur(6px); font-size: clamp(12px, 3.2vw, 15px);
-  }
+  .pill{ display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; background: var(--pill); color:#0b1220; border:1px solid var(--pill-brd); font-weight:900; backdrop-filter: blur(6px); font-size: clamp(12px, 3.2vw, 15px); }
   .pill-dark{ background: var(--chip-dark); border:1px solid var(--chip-dark-brd); color:#fff; }
-  .scoreBig{
-    margin-left:auto;
-    font-size: clamp(18px, 4vw, 28px);
-    background: var(--score-grad);
-    color:white; border:none;
-    box-shadow: 0 6px 14px rgba(124,58,237,.25);
-  }
-  button{
-    appearance:none; border:none; cursor:pointer;
-    padding:12px 16px; border-radius:14px; font-weight:900;
-    font-size: clamp(14px, 3.6vw, 16px); letter-spacing:.3px;
-    color:#0b1220; background:var(--btn); border:2px solid var(--btn-brd);
-    transition: transform .06s ease, box-shadow .25s ease, background .2s ease;
-    backdrop-filter: blur(6px); touch-action: manipulation;
-  }
-  button:hover{ box-shadow:0 10px 18px rgba(0,0,0,.18); }
-  button:active{ transform:translateY(1px); }
-  button:disabled{ opacity:.6; cursor:not-allowed; }
+  .scoreBig{ margin-left:auto; font-size: clamp(18px, 4vw, 28px); background: var(--score-grad); color:white; border:none; box-shadow: 0 6px 14px rgba(124,58,237,.25); }
+
+  button{ appearance:none; border:none; cursor:pointer; padding:12px 16px; border-radius:14px; font-weight:900;
+    font-size: clamp(14px, 3.6vw, 16px); letter-spacing:.3px; color:#0b1220; background:var(--btn); border:2px solid var(--btn-brd);
+    transition: transform .06s ease, box-shadow .25s ease, background .2s ease; backdrop-filter: blur(6px); touch-action: manipulation; }
+  button:hover{ box-shadow:0 10px 18px rgba(0,0,0,.18); } button:active{ transform:translateY(1px); } button:disabled{ opacity:.6; cursor:not-allowed; }
   .accent{ color:white; border:0; background: linear-gradient(180deg, #a78bfa, #7c3aed); box-shadow: 0 8px 18px rgba(124,58,237,.35); }
   .btn-dark{ background: var(--chip-dark); border:2px solid var(--chip-dark-brd); color:#fff; }
 
-  textarea{
-    width:100%; min-height:140px; resize:vertical; font-size:16px; font-weight:600;
-    background:#ffffffc9; border:2px dashed #ffffffaa; color:#0b1220;
-    border-radius:16px; padding:12px; backdrop-filter: blur(6px);
-  }
+  textarea{ width:100%; min-height:140px; resize:vertical; font-size:16px; font-weight:600;
+    background:#ffffffc9; border:2px dashed #ffffffaa; color:#0b1220; border-radius:16px; padding:12px; backdrop-filter: blur(6px); }
   .tip{ color:#0b1220cc; font-weight:700; font-size:clamp(12px, 3vw, 14px); }
 
   .stage{ margin-top:12px; display:grid; gap:14px; }
   .prompt{ color:#0b1220; display:flex; align-items:center; gap:8px; font-weight:900; font-size: clamp(14px, 3.4vw, 16px); text-align:center; justify-content:center; }
   .slots, .pool{ display:flex; flex-wrap:wrap; gap:min(12px,2.8vw); min-height:80px; justify-content:center; }
-  .slot{
-    width: clamp(56px, 12vw, 72px); height: clamp(56px, 12vw, 72px);
-    border:3px dashed #ffffffbb; background:var(--slot);
-    border-radius:18px; display:flex; align-items:center; justify-content:center;
-    font-size: clamp(28px, 7vw, 36px);
-    color:#0b1220; transition: transform .12s ease, background .2s ease, border-color .2s ease;
-  }
+  .slot{ width: clamp(56px, 12vw, 72px); height: clamp(56px, 12vw, 72px);
+    border:3px dashed #ffffffbb; background:var(--slot); border-radius:18px; display:flex; align-items:center; justify-content:center;
+    font-size: clamp(28px, 7vw, 36px); transition: transform .12s ease, background .2s ease, border-color .2s ease; }
   .slot.drop-ok{ border-color:#22d3ee; background:#ffffff55; transform:scale(1.05); }
   .slot.filled{ border-style:solid; border-color:#ffffff; background:#ffffffbb; }
 
-  .tile{
-    user-select:none; width: clamp(56px, 12vw, 72px); height: clamp(56px, 12vw, 72px);
-    display:flex; align-items:center; justify-content:center;
-    border:3px solid #ffffffaa; border-radius:18px; font-weight:1000;
-    font-size: clamp(28px, 7vw, 36px); letter-spacing:.5px;
-    box-shadow:0 12px 22px rgba(0,0,0,.18);
+  .tile{ user-select:none; width: clamp(56px, 12vw, 72px); height: clamp(56px, 12vw, 72px);
+    display:flex; align-items:center; justify-content:center; border:3px solid #ffffffaa; border-radius:18px; font-weight:1000;
+    font-size: clamp(28px, 7vw, 36px); letter-spacing:.5px; box-shadow:0 12px 22px rgba(0,0,0,.18);
     transition: transform .12s ease, opacity .2s ease, box-shadow .2s ease, filter .2s ease, outline .12s ease;
-    color:#0b1220; touch-action: manipulation;
-  }
+    color:#0b1220; touch-action: none; /* important for smooth touch drag */ }
   .tile[draggable="true"]{ cursor:grab; }
   .tile.dragging{ opacity:.92; transform:scale(1.08) rotate(1.2deg); box-shadow:0 16px 26px rgba(0,0,0,.28); filter:saturate(1.2); }
   .tile.selected{ outline:4px solid #22d3ee; }
+  .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; } /* touch-drag ghost */
   .fade-out{ opacity:0; transform:scale(.96); }
 
   .result{ text-align:center; font-weight:1000; min-height:30px; }
   .ok{ color:var(--ok); } .bad{ color:var(--bad); }
 
   #summary h2{ font-size:clamp(24px, 5vw, 40px); margin:8px 0; color:#0b1220; }
-  .grandScore{
-    font-size: clamp(44px, 12vw, 100px);
-    line-height:1; font-weight:1000; text-align:center; margin:10px 0 6px;
-    background: var(--brand-grad);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
+  .grandScore{ font-size: clamp(44px, 12vw, 100px); line-height:1; font-weight:1000; text-align:center; margin:10px 0 6px;
+    background: var(--brand-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
   .confetti { position: fixed; top: 0; left: 0; width: 100%; height: 0; pointer-events: none; overflow: visible; }
   .confetti div { position: absolute; width: 10px; height: 14px; opacity: 0.95; animation: fall 900ms ease-out forwards; }
@@ -145,7 +97,6 @@
 
       <div class="row-split">
         <h1><span class="title-cap">🧩 Spelling Tiles</span></h1>
-        <!-- Label then colourful pill with just the theme name -->
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <span class="pill">Theme:</span>
           <div class="pill" id="themePill" style="background: var(--brand-grad); color:#fff; border:none;"><span id="themeName">Candy</span></div>
@@ -153,7 +104,6 @@
       </div>
       <p class="subtitle">Drag or tap tiles into the slots to spell each word. 🔊 Use “Hear Word” for a listening challenge!</p>
 
-      <!-- SETUP -->
       <div id="setup">
         <p class="tip">Paste words (one per line or comma-separated):</p>
         <textarea id="wordList" placeholder="cat
@@ -169,7 +119,6 @@ elephant"></textarea>
         </div>
       </div>
 
-      <!-- QUIZ -->
       <div id="quiz" style="display:none">
         <div class="controls">
           <span class="pill" id="progressPill">Word 1 of 1</span>
@@ -181,14 +130,13 @@ elephant"></textarea>
         </div>
 
         <div class="stage">
-          <div class="prompt" id="promptLine">Place the tiles on the slots in the right order. (Tip: on phones/tablets, tap a tile, then tap a slot!)</div>
+          <div class="prompt" id="promptLine">Place the tiles on the slots in the right order. (Tip: on phones/tablets, drag with your finger or tap a tile, then tap a slot!)</div>
           <div class="slots" id="slots"></div>
           <div class="pool" id="pool"></div>
           <div class="result" id="feedback"></div>
         </div>
       </div>
 
-      <!-- SUMMARY -->
       <div id="summary" style="display:none; text-align:center;">
         <h2>🎉 All done!</h2>
         <p id="finalScoreText"></p>
@@ -201,7 +149,6 @@ elephant"></textarea>
       </div>
     </div>
   </div>
-
   <div class="confetti" id="confetti"></div>
 
 <script>
@@ -222,7 +169,6 @@ elephant"></textarea>
       `radial-gradient(1200px 800px at 10% 10%, #ffffff33, transparent 60%),`+
       `radial-gradient(900px 700px at 85% 15%, #ffffff22, transparent 60%),`+
       `radial-gradient(900px 700px at 20% 85%, #ffffff22, transparent 60%),`+ t.bg;
-
     document.documentElement.style.setProperty('--slot', t.slot);
     document.documentElement.style.setProperty('--pill', t.pill);
     document.documentElement.style.setProperty('--pill-brd', t.pillBrd);
@@ -231,7 +177,7 @@ elephant"></textarea>
     document.documentElement.style.setProperty('--score-grad', t.score);
     document.documentElement.style.setProperty('--brand-grad', t.brand);
     themeName.textContent = t.name;
-    themePill.style.background = t.brand; // keep colourful pill
+    themePill.style.background = t.brand;
   }
 
   // Elements
@@ -242,7 +188,7 @@ elephant"></textarea>
   const startBtn = document.getElementById('startBtn');
   const sampleBtn = document.getElementById('sampleBtn');
   const themeBtn = document.getElementById('themeBtn');
-  const themeBtn2 = document.getElementById('themeBtn2'); // define ONCE
+  const themeBtn2 = document.getElementById('themeBtn2');
   const themeName = document.getElementById('themeName');
   const themePill = document.getElementById('themePill');
 
@@ -262,140 +208,239 @@ elephant"></textarea>
   const confettiEl = document.getElementById('confetti');
 
   // State
-  let words = [];
-  let currentIndex = 0;
-  let score = 0;
-  let previewing = false;
-  let currentTilesOriginal = [];
-  let selectedTile = null;
+  let words = []; let currentIndex = 0; let score = 0; let previewing = false;
+  let currentTilesOriginal = []; let selectedTile = null;
 
   // Utils
-  function parseWords(raw) {
-    return raw.split(/[\n,]+/).map(w => w.trim()).filter(Boolean).map(w => w.replace(/\s+/g,''));
-  }
-  function speak(text){
-    try { const u = new SpeechSynthesisUtterance(text); u.rate = 0.95; u.pitch = 1.0; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch(e){}
-  }
-  function updatePills() {
-    progressPill.textContent = `Word ${Math.min(currentIndex+1, words.length)} of ${words.length}`;
-    scorePill.textContent = `⭐ Score: ${score}`;
-  }
-  function setButtonsDisabled(disabled){
-    hearBtn.disabled = disabled; reshuffleBtn.disabled = disabled; skipBtn.disabled = disabled;
-  }
-  function setTilesDraggable(enabled){
-    document.querySelectorAll('.tile').forEach(t => t.setAttribute('draggable', enabled ? 'true' : 'false'));
-  }
-  function clearStage(){
-    slotsEl.innerHTML = ''; poolEl.innerHTML = ''; feedbackEl.textContent = ''; feedbackEl.className = 'result'; selectedTile = null;
-  }
-  function derange(arr){
-    const a = arr.slice(); if (a.length < 2) return a;
-    for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * i); [a[i], a[j]] = [a[j], a[i]]; }
-    return a;
-  }
-  function confettiBurst(){
-    const colors = ['#22d3ee','#a78bfa','#f472b6','#34d399','#f59e0b','#60a5fa'];
-    for (let i=0;i<22;i++){ const p = document.createElement('div'); p.style.left = (50 + (Math.random()*20 - 10)) + 'vw'; p.style.top = '0px'; p.style.background = colors[(Math.random()*colors.length)|0]; confettiEl.appendChild(p); setTimeout(()=> p.remove(), 950); }
-  }
-  function hueForIndex(i, total){ const base = (i * (360/Math.max(total,1))) % 360; return Math.round(base); }
+  function parseWords(raw){ return raw.split(/[\n,]+/).map(w=>w.trim()).filter(Boolean).map(w=>w.replace(/\s+/g,'')); }
+  function speak(text){ try{ const u = new SpeechSynthesisUtterance(text); u.rate=.95; u.pitch=1; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
+  function updatePills(){ progressPill.textContent = `Word ${Math.min(currentIndex+1, words.length)} of ${words.length}`; scorePill.textContent = `⭐ Score: ${score}`; }
+  function setButtonsDisabled(d){ hearBtn.disabled=d; reshuffleBtn.disabled=d; skipBtn.disabled=d; }
+  function setTilesDraggable(enabled){ document.querySelectorAll('.tile').forEach(t=>t.setAttribute('draggable', enabled?'true':'false')); }
+  function clearStage(){ slotsEl.innerHTML=''; poolEl.innerHTML=''; feedbackEl.textContent=''; feedbackEl.className='result'; selectedTile=null; }
+  function derange(arr){ const a=arr.slice(); if(a.length<2) return a; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+  function hueForIndex(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
+  function confettiBurst(){ const colors=['#22d3ee','#a78bfa','#f472b6','#34d399','#f59e0b','#60a5fa']; for(let i=0;i<22;i++){ const p=document.createElement('div'); p.style.left=(50+(Math.random()*20-10))+'vw'; p.style.top='0px'; p.style.background=colors[(Math.random()*colors.length)|0]; confettiEl.appendChild(p); setTimeout(()=>p.remove(),950);} }
+
+  // Build a tile (adds desktop drag, tap-to-place, and touch drag)
   function makeTile({id, ch, index, total}) {
-    const t = document.createElement('div'); t.className = 'tile'; t.textContent = ch.toUpperCase(); t.setAttribute('draggable','true');
+    const t = document.createElement('div');
+    t.className = 'tile';
+    t.textContent = ch.toUpperCase();
+    t.setAttribute('draggable','true'); // desktop HTML5 drag
     t.dataset.tileId = id; t.dataset.letter = ch.toUpperCase();
-    const h = hueForIndex(index ?? 0, total ?? 8);
+    const h = hueForIndex(index??0, total??8);
     t.style.background = `linear-gradient(180deg, hsla(${h}, 90%, 85%, .95), hsla(${h}, 95%, 75%, .95))`;
     t.style.borderColor = `hsla(${h}, 95%, 92%, .9)`;
-    t.addEventListener('dragstart', (e)=>{ t.classList.add('dragging'); e.dataTransfer.setData('text/tile-id', id); e.dataTransfer.effectAllowed = 'move'; });
+
+    // Desktop drag
+    t.addEventListener('dragstart', (e)=>{ t.classList.add('dragging'); e.dataTransfer.setData('text/tile-id', id); e.dataTransfer.effectAllowed='move'; });
     t.addEventListener('dragend', ()=> t.classList.remove('dragging'));
-    t.addEventListener('click', ()=>{ if (previewing) return; if (selectedTile && selectedTile === t){ t.classList.remove('selected'); selectedTile=null; return; } if (selectedTile) selectedTile.classList.remove('selected'); selectedTile=t; t.classList.add('selected'); });
+
+    // Tap select
+    t.addEventListener('click', ()=>{ if(previewing) return; if(selectedTile===t){ t.classList.remove('selected'); selectedTile=null; return;} if(selectedTile) selectedTile.classList.remove('selected'); selectedTile=t; t.classList.add('selected'); });
+
+    // Touch/pen drag via Pointer Events (works on iOS/Android)
+    t.addEventListener('pointerdown', (e)=>{
+      if (e.pointerType === 'mouse') return; // let native drag handle desktop
+      if (previewing) return;
+      e.preventDefault();
+      startTouchDrag(t, e);
+    });
+
     return t;
   }
 
-  // Build a word stage
+  // Touch drag helpers
+  let drag = null; // {node, ghost, offsetX, offsetY, lastTarget}
+  function startTouchDrag(tile, e){
+    // create ghost that follows finger
+    const rect = tile.getBoundingClientRect();
+    const ghost = tile.cloneNode(true);
+    ghost.classList.add('drag-ghost','dragging');
+    ghost.style.width = rect.width+'px'; ghost.style.height = rect.height+'px';
+    document.body.appendChild(ghost);
+
+    // move original back to pool temporarily so it "detaches"
+    const originParent = tile.parentElement;
+    poolEl.appendChild(tile); // keeps it in DOM for easy drop placement
+
+    drag = {
+      node: tile,
+      ghost,
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top,
+      lastTarget: null,
+      originParent
+    };
+    updateGhostPosition(e.clientX, e.clientY);
+
+    // highlight under finger
+    highlightDropTarget(e.clientX, e.clientY);
+
+    // listeners
+    const move = (ev)=>{ ev.preventDefault(); updateGhostPosition(ev.clientX, ev.clientY); highlightDropTarget(ev.clientX, ev.clientY); };
+    const up = (ev)=>{ ev.preventDefault(); finishTouchDrag(ev.clientX, ev.clientY); cleanup(); };
+    const cancel = ()=>{ cancelTouchDrag(); cleanup(); };
+
+    function cleanup(){
+      document.removeEventListener('pointermove', move, {passive:false});
+      document.removeEventListener('pointerup', up, {passive:false});
+      document.removeEventListener('pointercancel', cancel);
+    }
+    document.addEventListener('pointermove', move, {passive:false});
+    document.addEventListener('pointerup', up, {passive:false});
+    document.addEventListener('pointercancel', cancel);
+  }
+
+  function updateGhostPosition(x,y){
+    if(!drag) return;
+    drag.ghost.style.left = (x - drag.offsetX) + 'px';
+    drag.ghost.style.top  = (y - drag.offsetY) + 'px';
+  }
+
+  function elementIsSlot(el){
+    return el && el.classList && el.classList.contains('slot');
+  }
+
+  function findDropContainerAt(x,y){
+    let el = document.elementFromPoint(x,y);
+    // climb up to a slot if needed
+    while (el && !elementIsSlot(el) && el !== poolEl && el !== document.body) el = el.parentElement;
+    return elementIsSlot(el) ? el : (el === poolEl ? poolEl : null);
+  }
+
+  function highlightDropTarget(x,y){
+    if(!drag) return;
+    const target = findDropContainerAt(x,y);
+    if (drag.lastTarget && drag.lastTarget.classList) drag.lastTarget.classList.remove('drop-ok');
+    if (elementIsSlot(target)) target.classList.add('drop-ok');
+    drag.lastTarget = target;
+  }
+
+  function finishTouchDrag(x,y){
+    if(!drag) return;
+    const target = findDropContainerAt(x,y);
+    if (drag.lastTarget && drag.lastTarget.classList) drag.lastTarget.classList.remove('drop-ok');
+    drag.ghost.remove();
+
+    // default to pool if no valid drop
+    const dropTo = target || poolEl;
+
+    if (elementIsSlot(dropTo)) {
+      // If slot occupied, send its tile back to pool
+      if (dropTo.firstElementChild) poolEl.appendChild(dropTo.firstElementChild);
+      dropTo.appendChild(drag.node);
+    } else {
+      poolEl.appendChild(drag.node);
+    }
+    markFilledStates();
+    const word = words[currentIndex];
+    checkIfSolved(word);
+    drag = null;
+  }
+
+  function cancelTouchDrag(){
+    if(!drag) return;
+    drag.ghost.remove();
+    // return piece to pool
+    poolEl.appendChild(drag.node);
+    drag = null;
+  }
+
+  // Build word stage
   function buildWordStage(word){
     clearStage();
-    [...word].forEach((ch, i) => {
-      const slot = document.createElement('div'); slot.className = 'slot'; slot.dataset.index = String(i); slot.dataset.letter = ch.toUpperCase();
-      slot.addEventListener('dragover', (e)=>{ e.preventDefault(); slot.classList.add('drop-ok'); });
-      slot.addEventListener('dragleave', ()=> slot.classList.remove('drop-ok'));
-      slot.addEventListener('drop', (e)=> onDrop(e, slot));
+
+    // Slots
+    [...word].forEach((ch,i)=>{
+      const slot = document.createElement('div');
+      slot.className='slot'; slot.dataset.index=String(i); slot.dataset.letter=ch.toUpperCase();
+      // desktop dnd
+      slot.addEventListener('dragover',(e)=>{ e.preventDefault(); slot.classList.add('drop-ok'); });
+      slot.addEventListener('dragleave',()=> slot.classList.remove('drop-ok'));
+      slot.addEventListener('drop',(e)=> onDrop(e, slot));
+      // tap-to-place
       slot.addEventListener('click', ()=>{
         if (previewing) return;
-        if (!selectedTile){ if (slot.firstElementChild){ poolEl.appendChild(slot.firstElementChild); markFilledStates(); checkIfSolved(word); } return; }
+        if (!selectedTile){ if (slot.firstElementChild){ poolEl.appendChild(slot.firstElementChild); markFilledStates(); checkIfSolved(word);} return; }
         if (slot.firstElementChild) poolEl.appendChild(slot.firstElementChild);
         slot.appendChild(selectedTile); selectedTile.classList.remove('selected'); selectedTile=null; markFilledStates(); checkIfSolved(word);
       });
       slotsEl.appendChild(slot);
     });
 
-    currentTilesOriginal = [...word].map((ch, idx) => ({ id: `${ch}-${idx}-${crypto.getRandomValues(new Uint32Array(1))[0]}`, ch, index: idx, total: word.length }));
+    // Canonical tiles
+    currentTilesOriginal = [...word].map((ch, idx) => ({ id:`${ch}-${idx}-${crypto.getRandomValues(new Uint32Array(1))[0]}`, ch, index:idx, total:word.length }));
 
-    // PREVIEW -> derange
+    // PREVIEW then derange
     previewing = true; setButtonsDisabled(true);
-    currentTilesOriginal.forEach((t, i) => { const tileEl = makeTile(t); tileEl.setAttribute('draggable','false'); slotsEl.children[i].appendChild(tileEl); });
+    currentTilesOriginal.forEach((t,i)=>{ const el = makeTile(t); el.setAttribute('draggable','false'); slotsEl.children[i].appendChild(el); });
     markFilledStates();
 
     let seconds = PREVIEW_SECONDS;
-    previewPill.style.display = ''; previewPill.textContent = `👀 Memorise: ${seconds}`;
+    previewPill.style.display=''; previewPill.textContent = `👀 Memorise: ${seconds}`;
     const timer = setInterval(()=>{
       seconds--; previewPill.textContent = `👀 Memorise: ${seconds}`;
-      if (seconds <= 0){
+      if (seconds<=0){
         clearInterval(timer);
-        slotsEl.querySelectorAll('.tile').forEach(t => t.classList.add('fade-out'));
+        slotsEl.querySelectorAll('.tile').forEach(t=>t.classList.add('fade-out'));
         setTimeout(()=>{
           const deranged = derange(currentTilesOriginal);
-          [...slotsEl.querySelectorAll('.tile')].forEach(t => poolEl.appendChild(t));
-          poolEl.innerHTML = '';
-          deranged.forEach((t, i) => poolEl.appendChild(makeTile({...t, index:i, total:deranged.length})));
+          [...slotsEl.querySelectorAll('.tile')].forEach(t=>poolEl.appendChild(t));
+          poolEl.innerHTML='';
+          deranged.forEach((t,i)=> poolEl.appendChild(makeTile({...t,index:i,total:deranged.length})));
           setTilesDraggable(true); markFilledStates();
-          previewPill.style.display = 'none'; previewing=false; setButtonsDisabled(false);
-          feedbackEl.textContent = ''; feedbackEl.classList.remove('ok','bad');
-        }, 200);
+          previewPill.style.display='none'; previewing=false; setButtonsDisabled(false);
+          feedbackEl.textContent=''; feedbackEl.classList.remove('ok','bad');
+        },200);
       }
-    }, 1000);
+    },1000);
 
+    // Pool accepts desktop drops
     poolEl.addEventListener('dragover', e=>{ e.preventDefault(); });
     poolEl.addEventListener('drop', (e)=>{
       e.preventDefault();
       const tileId = e.dataTransfer.getData('text/tile-id');
       const existing = document.querySelector(`[data-tile-id="${CSS.escape(tileId)}"]`);
-      if (existing) { poolEl.appendChild(existing); markFilledStates(); checkIfSolved(word); }
+      if (existing){ poolEl.appendChild(existing); markFilledStates(); checkIfSolved(word); }
     });
   }
 
   function onDrop(e, slot){
     e.preventDefault(); slot.classList.remove('drop-ok');
-    const tileId = e.dataTransfer.getData('text/tile-id'); if (!tileId) return;
-    const tile = document.querySelector(`[data-tile-id="${CSS.escape(tileId)}"]`); if (!tile) return;
+    const tileId = e.dataTransfer.getData('text/tile-id'); if(!tileId) return;
+    const tile = document.querySelector(`[data-tile-id="${CSS.escape(tileId)}"]`); if(!tile) return;
     if (slot.firstElementChild) poolEl.appendChild(slot.firstElementChild);
     slot.appendChild(tile); markFilledStates();
     const word = words[currentIndex]; checkIfSolved(word);
   }
-  function markFilledStates(){ [...slotsEl.children].forEach(s => s.classList.toggle('filled', !!s.firstElementChild)); }
-  function getCurrentAnswer(){ return [...slotsEl.children].map(s => s.firstElementChild ? s.firstElementChild.dataset.letter : '·').join(''); }
-  function isComplete(){ return [...slotsEl.children].every(s => !!s.firstElementChild); }
-  function confettiBurst(){ const colors = ['#22d3ee','#a78bfa','#f472b6','#34d399','#f59e0b','#60a5fa']; for (let i=0;i<22;i++){ const p=document.createElement('div'); p.style.left=(50+(Math.random()*20-10))+'vw'; p.style.top='0px'; p.style.background=colors[(Math.random()*colors.length)|0]; confettiEl.appendChild(p); setTimeout(()=>p.remove(),950);} }
+  function markFilledStates(){ [...slotsEl.children].forEach(s=>s.classList.toggle('filled', !!s.firstElementChild)); }
+  function getCurrentAnswer(){ return [...slotsEl.children].map(s=>s.firstElementChild ? s.firstElementChild.dataset.letter : '·').join(''); }
+  function isComplete(){ return [...slotsEl.children].every(s=>!!s.firstElementChild); }
   function checkIfSolved(targetWord){
     if (previewing) return;
     if (!isComplete()){ feedbackEl.textContent=''; feedbackEl.classList.remove('ok','bad'); return; }
     const guess = getCurrentAnswer();
     if (guess === targetWord.toUpperCase()){
-      feedbackEl.textContent = '✅ Correct! Amazing!'; feedbackEl.classList.add('ok'); feedbackEl.classList.remove('bad');
+      feedbackEl.textContent='✅ Correct! Amazing!'; feedbackEl.classList.add('ok'); feedbackEl.classList.remove('bad');
       score++; updatePills(); confettiBurst(); setTimeout(nextWord, 720);
-    } else { feedbackEl.textContent = '🧠 Not quite — try swapping some tiles.'; feedbackEl.classList.add('bad'); feedbackEl.classList.remove('ok'); }
+    } else {
+      feedbackEl.textContent='🧠 Not quite — try swapping some tiles.'; feedbackEl.classList.add('bad'); feedbackEl.classList.remove('ok');
+    }
   }
-  function nextWord(){ currentIndex++; if (currentIndex >= words.length) return finish(); updatePills(); buildWordStage(words[currentIndex]); }
+  function nextWord(){ currentIndex++; if (currentIndex>=words.length) return finish(); updatePills(); buildWordStage(words[currentIndex]); }
   function finish(){ quizEl.style.display='none'; summaryEl.style.display=''; const pct=Math.round((score/words.length)*100); finalScoreTextEl.textContent=`You scored ${score} out of ${words.length}.`; grandScoreEl.textContent=`${pct}%`; }
 
   // Events
   startBtn.addEventListener('click', ()=>{
     const parsed = parseWords(listEl.value);
-    if (!parsed.length) { alert('Please enter at least one word.'); return; }
-    words = parsed; currentIndex=0; score=0;
+    if (!parsed.length){ alert('Please enter at least one word.'); return; }
+    words=parsed; currentIndex=0; score=0;
     setupEl.style.display='none'; summaryEl.style.display='none'; quizEl.style.display='';
     updatePills(); buildWordStage(words[0]);
   });
-  sampleBtn.addEventListener('click', ()=>{ listEl.value = `cat
+  sampleBtn.addEventListener('click', ()=>{ listEl.value=`cat
 purple
 friend
 because
@@ -405,26 +450,22 @@ beautiful
 chocolate`; });
 
   function reshuffleFromOriginal(){
-    [...slotsEl.querySelectorAll('.tile')].forEach(t => poolEl.appendChild(t));
+    [...slotsEl.querySelectorAll('.tile')].forEach(t=>poolEl.appendChild(t));
     poolEl.innerHTML=''; const deranged = derange(currentTilesOriginal);
-    deranged.forEach((t,i)=> poolEl.appendChild(makeTile({...t, index:i, total:deranged.length})));
+    deranged.forEach((t,i)=> poolEl.appendChild(makeTile({...t,index:i,total:deranged.length})));
     markFilledStates(); feedbackEl.textContent=''; feedbackEl.classList.remove('ok','bad'); selectedTile=null;
   }
-  reshuffleBtn.addEventListener('click', ()=>{ if (!previewing) reshuffleFromOriginal(); });
-  skipBtn.addEventListener('click', ()=>{ if (!previewing) nextWord(); });
+  reshuffleBtn.addEventListener('click', ()=>{ if(!previewing) reshuffleFromOriginal(); });
+  skipBtn.addEventListener('click', ()=>{ if(!previewing) nextWord(); });
   hearBtn.addEventListener('click', ()=> speak(words[currentIndex]));
 
-  retryBtn.addEventListener('click', ()=>{
-    currentIndex=0; score=0; summaryEl.style.display='none'; quizEl.style.display='';
-    updatePills(); buildWordStage(words[0]);
-  });
+  retryBtn.addEventListener('click', ()=>{ currentIndex=0; score=0; summaryEl.style.display='none'; quizEl.style.display=''; updatePills(); buildWordStage(words[0]); });
   editBtn.addEventListener('click', ()=>{ summaryEl.style.display='none'; quizEl.style.display='none'; setupEl.style.display=''; });
 
-  function cycleTheme(){ themeIndex = (themeIndex + 1) % themes.length; applyTheme(themes[themeIndex]); }
+  function cycleTheme(){ themeIndex=(themeIndex+1)%themes.length; applyTheme(themes[themeIndex]); }
   themeBtn.addEventListener('click', cycleTheme);
   if (themeBtn2) themeBtn2.addEventListener('click', cycleTheme);
 
-  // Init default theme
   applyTheme(themes[themeIndex]);
 })();
 </script>
