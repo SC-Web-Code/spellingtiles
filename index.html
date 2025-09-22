@@ -323,8 +323,11 @@ elephant"></textarea>
 /* ---------- tiny polyfill ---------- */
 if (!window.CSS || !CSS.escape) {
   window.CSS = window.CSS || {};
-  CSS.escape = CSS.escape || function (v) { return String(v).replace(/[^a-zA-Z0-9_\\-]/g, '\\\\$&'); };
+  CSS.escape = function (v) { 
+    return String(v).replace(/[^a-zA-Z0-9_\-]/g, '\\$&'); 
+  };
 }
+</script>
 
 /* ---------- colorful tile helpers ---------- */
 function uiHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
