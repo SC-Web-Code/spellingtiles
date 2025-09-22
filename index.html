@@ -167,27 +167,25 @@
   .wordItem.done{ background:#d1fae5; border-color:#bbf7d0 }
   .wordItem.done .mark{ border-color:#10b981; background:#10b981; color:#fff }
 
-/* Bigger tiles for the section chip (Setup / Spelling Test / Crossword) */
-#sectionChip .tile.uiLabel{
-  width: clamp(20px, 2.6vw, 28px);
-  height: clamp(20px, 2.6vw, 28px);
-  font-size: clamp(13px, 1.9vw, 16px);
-}
+  /* Bigger tiles for the section chip (Setup / Spelling Test / Crossword) */
+  #sectionChip .tile.uiLabel{
+    width: clamp(20px, 2.6vw, 28px);
+    height: clamp(20px, 2.6vw, 28px);
+    font-size: clamp(13px, 1.9vw, 16px);
+  }
 
+  /* Crossword: spacing around the "WORD LIST" heading */
+  #cw-wordlist-title{
+    margin-block: 6px; /* top & bottom */
+  }
 
-/* Crossword: spacing around the "WORD LIST" heading */
-#cw-wordlist-title{
-  margin-block: 6px; /* top & bottom */
-}
-
-/* Crossword: spacing for the feedback line ("WELL  DONE") */
-#cw .st-result{
-  margin: 8px 0;      /* ensure it doesn’t butt against neighbors */
-}
-#cw .st-result .inlineTiles{
-  margin: 4px 0;      /* extra cushion for the chip-tile row itself */
-}
-
+  /* Crossword: spacing for the feedback line ("WELL  DONE") */
+  #cw .st-result{
+    margin: 8px 0;
+  }
+  #cw .st-result .inlineTiles{
+    margin: 4px 0;
+  }
 </style>
 </head>
 <body>
@@ -360,6 +358,23 @@ function setButtonTileLabel(btn, text, sizeClass='chipTile'){
   renderTiles(span, text, sizeClass);
   btn.appendChild(span);
   btn.setAttribute('aria-label', text);
+}
+
+/* ---------- Persistence helpers (fix) ---------- */
+function saveProgress(wordsArr, solvedSet){
+  try{
+    localStorage.setItem('stWords', JSON.stringify(wordsArr || []));
+    localStorage.setItem('stSolved', JSON.stringify([...(solvedSet || new Set())]));
+  }catch(e){}
+}
+function loadProgress(){
+  try{
+    const w = JSON.parse(localStorage.getItem('stWords') || '[]');
+    const s = new Set(JSON.parse(localStorage.getItem('stSolved') || '[]'));
+    return { w, s };
+  }catch(e){
+    return { w: [], s: new Set() };
+  }
 }
 
 /* ---------- THEMES ---------- */
@@ -648,7 +663,9 @@ function stCheckSolved(targetWord){
   const guess = stGetAnswer();
   if (guess === targetWord.toUpperCase()){
     stShowCorrect();
-    stScore++; stSolved.add(targetWord); stUpdatePills(); setTimeout(stNextWord, 650);
+    stScore++; stSolved.add(targetWord);
+    saveProgress(stWords, stSolved); // persist as you go
+    stUpdatePills(); setTimeout(stNextWord, 650);
   } else {
     st.feedback.textContent='🧠 Not quite — try swapping some tiles.'; st.feedback.className='st-result bad';
   }
@@ -670,6 +687,9 @@ function stFinish(){
 
   st.percentText.innerHTML='';
   renderTiles(st.percentText, `${pct}%`, 'uiLabel');
+
+  // persist final state too
+  saveProgress(stWords, stSolved);
 }
 
 st.reshuffleBtn.addEventListener('click', ()=>{
@@ -692,6 +712,11 @@ st.editBtn.addEventListener('click', ()=>{
 const stBuildBtn = document.getElementById('st-buildCrosswordFromHere');
 stBuildBtn.textContent = 'Build Crossword';
 st.buildCWHere.addEventListener('click', ()=>{
+  // fallback to persisted data if needed
+  if (!stWords.length){
+    const { w, s } = loadProgress();
+    stWords = w; stSolved = s;
+  }
   const useMode = st.afterUseMode.value;
   let src = useMode==='correct' ? stWords.filter(w=>stSolved.has(w)) : stWords.slice();
   const cap = parseInt(st.afterCap.value,10) || 12;
@@ -705,6 +730,10 @@ startSpellingBtn.addEventListener('click', ()=>{
   if (!words.length){ alert('Please enter at least one word.'); return; }
   stWords = words;
   stIndex=0; stScore=0; stSolved.clear();
+
+  // persist immediately (fix)
+  saveProgress(stWords, stSolved);
+
   document.getElementById('setup').style.display='none';
   document.getElementById('cw').style.display='none';
   document.getElementById('st').style.display='';
@@ -784,7 +813,7 @@ function buildCrossword(rawWords, PAD=2, MAX=40){
     }
     const ex1x=x+(dir==='across'?-1:0), ex1y=y+(dir==='down'?-1:0);
     const ex2x=x+(dir==='across'?word.length:0), ex2y=y+(dir==='down'?word.length:0);
-    if (snap.has(key(ex1x,ex1y)) || snap.has(key(ex2x,ex2y))) return false;
+    if (snap.has(key(ex1x,ex1y)) || snap.has(key(ex2x,ex2y)) ) return false;
     return true;
   }
   function placeSnap(word,x,y,dir,snap){ for(let i=0;i<word.length;i++){ const gx=x+(dir==='across'?i:0), gy=y+(dir==='down'?i:0); const k=key(gx,gy); if (!snap.has(k)) snap.set(k,word[i]); } }
@@ -1001,7 +1030,7 @@ function cwStartTouchDrag(tile,e){
   ghost.classList.add('dragging');
   document.body.appendChild(ghost);
 
-  cwDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY:e.clientY-rect.top, lastTarget:null};
+  cwDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY=e.clientY-rect.top, lastTarget:null};
   function move(ev){
     ev.preventDefault();
     ghost.style.left=(ev.clientX-cwDrag.offsetX)+'px';
@@ -1054,8 +1083,19 @@ document.getElementById('cw-backToSetup').addEventListener('click', ()=>{
 
 /* Build crossword from setup */
 buildCrosswordBtn.addEventListener('click', ()=>{
-  const words = parseWords(inputWords.value);
+  let words = parseWords(inputWords.value);
+  if (!words.length){
+    // fallback to any persisted list if textarea is empty
+    const { w } = loadProgress();
+    words = w;
+  }
   if (!words.length){ alert('Please enter at least one word.'); return; }
+
+  // Update persistent state for crossword path from setup
+  stWords = words;
+  stSolved = new Set();
+  saveProgress(stWords, stSolved);
+
   const cap = parseInt(crossCap.value,10) || 12;
   const chosen = pickCap(words, cap); // random
   startCrosswordFlow(chosen);
@@ -1082,4 +1122,3 @@ renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile')
 </script>
 </body>
 </html>
-
