@@ -39,7 +39,7 @@
   /* HERO TITLE */
   .titleHero{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
 
-  /* ---------- DISPLAY TILE BASE (made ~2 font sizes smaller) ---------- */
+  /* ---------- DISPLAY TILE BASE (~2 font sizes smaller) ---------- */
   .tile{
     user-select:none;
     width:clamp(36px, 7.5vw, 46px);
@@ -320,14 +320,13 @@ elephant"></textarea>
   </div>
 
 <script>
-/* ---------- tiny polyfill ---------- */
+/* ---------- tiny polyfill (correct) ---------- */
 if (!window.CSS || !CSS.escape) {
   window.CSS = window.CSS || {};
-  CSS.escape = function (v) { 
-    return String(v).replace(/[^a-zA-Z0-9_\-]/g, '\\$&'); 
+  CSS.escape = function (v) {
+    return String(v).replace(/[^a-zA-Z0-9_\-]/g, '\\$&');
   };
 }
-</script>
 
 /* ---------- colorful tile helpers ---------- */
 function uiHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
@@ -363,7 +362,7 @@ function setButtonTileLabel(btn, text, sizeClass='chipTile'){
   btn.setAttribute('aria-label', text);
 }
 
-/* ---------- Persistence helpers (fix) ---------- */
+/* ---------- Persistence helpers ---------- */
 function saveProgress(wordsArr, solvedSet){
   try{
     localStorage.setItem('stWords', JSON.stringify(wordsArr || []));
@@ -527,7 +526,7 @@ function stStartTouchDrag(tile, e){
   ghost.style.position='fixed'; ghost.style.zIndex='9999'; ghost.style.pointerEvents='none';
   document.body.appendChild(ghost);
   st.pool.appendChild(tile);
-  stDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY:e.clientY-rect.top, lastTarget:null};
+  stDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY=e.clientY-rect.top, lastTarget:null};
   stUpdateGhost(e.clientX,e.clientY);
   function move(ev){ ev.preventDefault(); stUpdateGhost(ev.clientX,ev.clientY); stHighlightDrop(ev.clientX,ev.clientY); }
   function up(ev){ ev.preventDefault(); stFinishTouch(ev.clientX,ev.clientY); cleanup(); }
@@ -911,11 +910,20 @@ function cwBuildBoard(CW, cluePercent){
   const width=maxX-minX+1; cw.board.style.gridTemplateColumns=`repeat(${width}, auto)`;
 
   const colorKeySet=new Set();
-  for (const p of CW.placed){ if (p.index>=0) continue; for (let i=0;i<p.word.length;i++){ const x=p.x+(p.dir==='across'?i:0), y=p.y+(p.dir==='down'?i:0); colorKeySet.add(x+','+y); } }
+  for (const p of CW.placed){ if (p.index>=0) continue; for (let i=0;i*p.word.length;i++){ /* noop - safety */ } }
+  for (const p of CW.placed){ if (p.index>=0) continue;
+    for (let i=0;i<p.word.length;i++){
+      const x=p.x+(p.dir==='across'?i:0), y=p.y+(p.dir==='down'?i:0);
+      colorKeySet.add(x+','+y);
+    }
+  }
 
   const allRegularKeys=[];
   for (const p of CW.placed){ if (p.index<0) continue;
-    for (let i=0;i<p.word.length;i++){ const x=p.x+(p.dir==='across'?i:0), y=p.y+(p.dir==='down'?i:0); allRegularKeys.push(x+','+y); } }
+    for (let i=0;i<p.word.length;i++){
+      const x=p.x+(p.dir==='across'?i:0), y=p.y+(p.dir==='down'?i:0);
+      allRegularKeys.push(x+','+y);
+    } }
   const giveCount=Math.round(allRegularKeys.length*(cluePercent/100));
   const givenSet=new Set();
   while (givenSet.size<giveCount && givenSet.size<allRegularKeys.length){ givenSet.add(allRegularKeys[Math.floor(Math.random()*allRegularKeys.length)]); }
