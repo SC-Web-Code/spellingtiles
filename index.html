@@ -175,17 +175,11 @@
   }
 
   /* Crossword: spacing around the "WORD LIST" heading */
-  #cw-wordlist-title{
-    margin-block: 6px; /* top & bottom */
-  }
+  #cw-wordlist-title{ margin-block: 6px; }
 
   /* Crossword: spacing for the feedback line ("WELL  DONE") */
-  #cw .st-result{
-    margin: 8px 0;
-  }
-  #cw .st-result .inlineTiles{
-    margin: 4px 0;
-  }
+  #cw .st-result{ margin: 8px 0; }
+  #cw .st-result .inlineTiles{ margin: 4px 0; }
 </style>
 </head>
 <body>
@@ -323,9 +317,7 @@ elephant"></textarea>
 /* ---------- tiny polyfill (correct) ---------- */
 if (!window.CSS || !CSS.escape) {
   window.CSS = window.CSS || {};
-  CSS.escape = function (v) {
-    return String(v).replace(/[^a-zA-Z0-9_\-]/g, '\\$&');
-  };
+  CSS.escape = function (v) { return String(v).replace(/[^a-zA-Z0-9_\-]/g, '\\$&'); };
 }
 
 /* ---------- colorful tile helpers ---------- */
@@ -452,7 +444,7 @@ function pickCap(words, cap){  /* always random now */
   const uniq = Array.from(new Set(words.map(w=>w.trim()).filter(Boolean)));
   if (cap >= uniq.length) return uniq;
   const arr = uniq.slice();
-  for (let i=arr.length-1; i>0; i--){ const j = Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  for (let i=arr.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
   return arr.slice(0, cap);
 }
 
@@ -815,12 +807,11 @@ function buildCrossword(rawWords, PAD=2, MAX=40){
     }
     const ex1x=x+(dir==='across'?-1:0), ex1y=y+(dir==='down'?-1:0);
     const ex2x=x+(dir==='across'?word.length:0), ex2y=y+(dir==='down'?word.length:0);
-    if (snap.has(key(ex1x,ex1y)) || snap.has(key(ex2x,ex2y)) ) return false;
+    if (snap.has(key(ex1x,ex1y)) || snap.has(key(ex2x,ex2y))) return false;
     return true;
   }
   function placeSnap(word,x,y,dir,snap){ for(let i=0;i<word.length;i++){ const gx=x+(dir==='across'?i:0), gy=y+(dir==='down'?i:0); const k=key(gx,gy); if (!snap.has(k)) snap.set(k,word[i]); } }
   function tryColorBridge(word,index){
-    const COLOR_WORDS = ["PURPLE","GREEN","BLUE","RED","ORANGE","YELLOW","PINK","BLACK","WHITE","BROWN","GREY"];
     if (!window.usedColors) window.usedColors = new Set();
     for (const color of COLOR_WORDS){
       if (usedColors.has(color)) continue;
@@ -902,6 +893,8 @@ function cwMarkDone(wi){
     }
   }
 }
+
+/* ---------- FIXED FUNCTION ---------- */
 function cwBuildBoard(CW, cluePercent){
   cw.board.innerHTML=''; cw.pool.innerHTML=''; cw.feedback.textContent=''; cw.feedback.className='st-result';
   wordNodesByIndex.clear();
@@ -909,73 +902,101 @@ function cwBuildBoard(CW, cluePercent){
   const {minX,maxX,minY,maxY}=CW.bounds;
   const width=maxX-minX+1; cw.board.style.gridTemplateColumns=`repeat(${width}, auto)`;
 
-  const colorKeySet=new Set();
-  for (const p of CW.placed){ if (p.index>=0) continue; for (let i=0;i*p.word.length;i++){ /* noop - safety */ } }
-  for (let i=0;i<p.word.length;i++){
-      const x=p.x+(p.dir==='across'?i:0), y=p.y+(p.dir==='down'?i:0);
-      colorKeySet.add(x+','+y);
+  // Build set of coordinates that belong to color-bridge words (index < 0)
+  const colorKeySet = new Set();
+  for (const p of CW.placed){
+    if (p.index >= 0) continue;
+    for (let i = 0; i < p.word.length; i++){
+      const x = p.x + (p.dir === 'across' ? i : 0);
+      const y = p.y + (p.dir === 'down'  ? i : 0);
+      colorKeySet.add(`${x},${y}`);
     }
   }
 
-  const allRegularKeys=[];
-  for (const p of CW.placed){ if (p.index<0) continue;
-    for (let i=0;i<p.word.length;i++){
-      const x=p.x+(p.dir==='across'?i:0), y=p.y+(p.dir==='down'?i:0);
-      allRegularKeys.push(x+','+y);
-    } }
-  const giveCount=Math.round(allRegularKeys.length*(cluePercent/100));
-  const givenSet=new Set();
-  while (givenSet.size<giveCount && givenSet.size<allRegularKeys.length){ givenSet.add(allRegularKeys[Math.floor(Math.random()*allRegularKeys.length)]); }
+  // Pick random “given” cells among regular words
+  const allRegularKeys = [];
+  for (const p of CW.placed){
+    if (p.index < 0) continue;
+    for (let i = 0; i < p.word.length; i++){
+      const x = p.x + (p.dir === 'across' ? i : 0);
+      const y = p.y + (p.dir === 'down'  ? i : 0);
+      allRegularKeys.push(`${x},${y}`);
+    }
+  }
+  const giveCount = Math.round(allRegularKeys.length * (cluePercent/100));
+  const givenSet = new Set();
+  while (givenSet.size < giveCount && givenSet.size < allRegularKeys.length){
+    givenSet.add(allRegularKeys[Math.floor(Math.random()*allRegularKeys.length)]);
+  }
 
-  const allCells=[];
+  const allCells = [];
   for (let y=minY; y<=maxY; y++){
     for (let x=minX; x<=maxX; x++){
-      const k=x+','+y; const letter=CW.grid.get(k);
-      const cell=document.createElement('div');
-      if (!letter){ cell.className='cell block'; }
-      else {
-        const isColor=colorKeySet.has(k); const given=isColor || givenSet.has(k);
-        cell.className='cell '+(given?'given':'slot');
-        cell.dataset.letter=letter; cell.dataset.filled=given?'1':'';
-        if (given) cell.textContent=letter;
+      const k = `${x},${y}`;
+      const letter = CW.grid.get(k);
+      const cell = document.createElement('div');
+
+      if (!letter){
+        cell.className = 'cell block';
+      } else {
+        const isColor = colorKeySet.has(k);
+        const given   = isColor || givenSet.has(k);
+        cell.className = 'cell ' + (given ? 'given' : 'slot');
+        cell.dataset.letter = letter;
+        cell.dataset.filled = given ? '1' : '';
+        if (given) cell.textContent = letter;
 
         if (!given){
           cell.addEventListener('dragover', e=>{ e.preventDefault(); cell.classList.add('drop-ok'); });
           cell.addEventListener('dragleave', ()=> cell.classList.remove('drop-ok'));
           cell.addEventListener('drop', e=> cwOnDrop(e, cell));
           cell.addEventListener('click', ()=>{
-            if (window.cwSelected){ cwPlaceTileIntoCell(window.cwSelected, cell); window.cwSelected.classList.remove('dragging'); window.cwSelected=null; }
-            else if (cell.firstElementChild && cell.firstElementChild.classList.contains('tile')) {
-              cw.pool.appendChild(cell.firstElementChild); cell.dataset.filled=''; cwOnGridChange();
+            if (window.cwSelected){
+              cwPlaceTileIntoCell(window.cwSelected, cell);
+              window.cwSelected.classList.remove('dragging');
+              window.cwSelected = null;
+            } else if (cell.firstElementChild && cell.firstElementChild.classList.contains('tile')){
+              cw.pool.appendChild(cell.firstElementChild);
+              cell.dataset.filled = '';
+              cwOnGridChange();
             }
           });
         }
       }
+
       cw.board.appendChild(cell);
-      if (letter) allCells.push({node:cell,key:k,target:letter,given:cell.classList.contains('given')});
+      if (letter) allCells.push({node:cell, key:k, target:letter, given:cell.classList.contains('given')});
     }
   }
 
-  // colorful pool tiles
-  const letters=[]; for (const c of allCells) if (!c.given) letters.push(c.target);
+  // Pool tiles
+  const letters = [];
+  for (const c of allCells) if (!c.given) letters.push(c.target);
   letters.sort(()=>Math.random()-.5);
   const totalLetters = letters.length;
   letters.forEach((ch,i)=> cw.pool.appendChild(cwMakeTile(ch,i,totalLetters)));
 
-  // map nodes per word index
+  // Map nodes per word index
   wordNodesByIndex.clear();
   for (const p of CW.placed){
-    if (p.index<0) continue;
-    const keys=[];
-    for (let i=0;i<p.word.length;i++){
-      const x=p.x+(p.dir==='across'?i:0), y=p.y+(p.dir==='down'?i:0);
-      keys.push(x+','+y);
+    if (p.index < 0) continue;
+    const keys = [];
+    for (let i=0; i<p.word.length; i++){
+      const x = p.x + (p.dir === 'across' ? i : 0);
+      const y = p.y + (p.dir === 'down'  ? i : 0);
+      keys.push(`${x},${y}`);
     }
-    const nodes=[]; for (const k of keys){ const cell=allCells.find(c=>c.key===k); if (cell) nodes.push(cell.node); }
+    const nodes = [];
+    for (const k of keys){
+      const cell = allCells.find(c => c.key === k);
+      if (cell) nodes.push(cell.node);
+    }
     wordNodesByIndex.set(p.index, nodes);
   }
+
   cwOnGridChange();
 }
+
 function cwOnDrop(e,cell){
   e.preventDefault();
   cell.classList.remove('drop-ok');
@@ -1040,7 +1061,7 @@ function cwStartTouchDrag(tile,e){
   ghost.classList.add('dragging');
   document.body.appendChild(ghost);
 
-  cwDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY=e.clientY-rect.top, lastTarget:null};
+  cwDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY:e.clientY-rect.top, lastTarget:null};
   function move(ev){
     ev.preventDefault();
     ghost.style.left=(ev.clientX-cwDrag.offsetX)+'px';
