@@ -174,10 +174,8 @@
     font-size: clamp(13px, 1.9vw, 16px);
   }
 
-  /* Crossword: spacing around the "WORD LIST" heading */
+  /* Crossword: spacing */
   #cw-wordlist-title{ margin-block: 6px; }
-
-  /* Crossword: spacing for the feedback line ("WELL  DONE") */
   #cw .st-result{ margin: 8px 0; }
   #cw .st-result .inlineTiles{ margin: 4px 0; }
 </style>
@@ -256,7 +254,6 @@ elephant"></textarea>
           </div>
 
           <div id="st-summary" style="display:none">
-            <!-- small tiles (uiLabel) -->
             <div id="st-completeText" class="inlineTiles" aria-live="polite"></div>
             <p id="st-final" style="margin-top:8px;"></p>
             <div id="st-percentText" class="inlineTiles" aria-live="polite"></div>
@@ -314,11 +311,16 @@ elephant"></textarea>
   </div>
 
 <script>
-/* ---------- tiny polyfill (correct) ---------- */
-if (!window.CSS || !CSS.escape) {
-  window.CSS = window.CSS || {};
-  CSS.escape = function (v) { return String(v).replace(/[^a-zA-Z0-9_\-]/g, '\\$&'); };
-}
+/* ---------- CSS.escape polyfill (safe) ---------- */
+(function(){
+  if (!window.CSS) window.CSS = {};
+  if (typeof window.CSS.escape !== "function") {
+    // Minimal polyfill: escape non-word characters for use in querySelector
+    window.CSS.escape = function(value){
+      return String(value).replace(/[^a-zA-Z0-9_\-]/g, "\\$&");
+    };
+  }
+})();
 
 /* ---------- colorful tile helpers ---------- */
 function uiHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
@@ -444,7 +446,7 @@ function pickCap(words, cap){  /* always random now */
   const uniq = Array.from(new Set(words.map(w=>w.trim()).filter(Boolean)));
   if (cap >= uniq.length) return uniq;
   const arr = uniq.slice();
-  for (let i=arr.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  for (let i=arr.length-1; i>0; i--){ const j = Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
   return arr.slice(0, cap);
 }
 
@@ -658,7 +660,7 @@ function stCheckSolved(targetWord){
   if (guess === targetWord.toUpperCase()){
     stShowCorrect();
     stScore++; stSolved.add(targetWord);
-    saveProgress(stWords, stSolved); // persist as you go
+    saveProgress(stWords, stSolved);
     stUpdatePills(); setTimeout(stNextWord, 650);
   } else {
     st.feedback.textContent='🧠 Not quite — try swapping some tiles.'; st.feedback.className='st-result bad';
@@ -669,7 +671,6 @@ function stNextWord(){
   stIndex++; if (stIndex>=stWords.length) return stFinish();
   stUpdatePills(); stBuildWord(stWords[stIndex]);
 }
-/* COMPLETE + percentage in small tiles (uiLabel size) */
 function stFinish(){
   const pct = Math.round((stScore/stWords.length)*100);
   st.summary.style.display='block';
@@ -682,14 +683,14 @@ function stFinish(){
   st.percentText.innerHTML='';
   renderTiles(st.percentText, `${pct}%`, 'uiLabel');
 
-  // persist final state too
   saveProgress(stWords, stSolved);
 }
 
 st.reshuffleBtn.addEventListener('click', ()=>{
   if (stPreviewing) return;
   [...st.slots.querySelectorAll('.tile')].forEach(t=>st.pool.appendChild(t));
-  st.pool.innerHTML=''; const der=stDerange(stTilesOriginal);
+  st.pool.innerHTML='';
+  const der=stDerange(stTilesOriginal);
   der.forEach((t,i)=> st.pool.appendChild(stMakeTile({...t,index:i,total:der.length})));
   stMarkFilled(); st.feedback.textContent=''; st.feedback.classList.remove('ok','bad'); stSelected=null;
 });
@@ -706,7 +707,6 @@ st.editBtn.addEventListener('click', ()=>{
 const stBuildBtn = document.getElementById('st-buildCrosswordFromHere');
 stBuildBtn.textContent = 'Build Crossword';
 st.buildCWHere.addEventListener('click', ()=>{
-  // fallback to persisted data if needed
   if (!stWords.length){
     const { w, s } = loadProgress();
     stWords = w; stSolved = s;
@@ -714,7 +714,7 @@ st.buildCWHere.addEventListener('click', ()=>{
   const useMode = st.afterUseMode.value;
   let src = useMode==='correct' ? stWords.filter(w=>stSolved.has(w)) : stWords.slice();
   const cap = parseInt(st.afterCap.value,10) || 12;
-  src = pickCap(src, cap);  // random
+  src = pickCap(src, cap);
   startCrosswordFlow(src);
 });
 
@@ -724,14 +724,12 @@ startSpellingBtn.addEventListener('click', ()=>{
   if (!words.length){ alert('Please enter at least one word.'); return; }
   stWords = words;
   stIndex=0; stScore=0; stSolved.clear();
-
-  // persist immediately (fix)
   saveProgress(stWords, stSolved);
 
   document.getElementById('setup').style.display='none';
   document.getElementById('cw').style.display='none';
   document.getElementById('st').style.display='';
-  setSectionLabel('Spelling Test'); // section chip uses uiLabel tiles
+  setSectionLabel('Spelling Test');
   stUpdatePills(); stBuildWord(stWords[0]);
 });
 
@@ -755,7 +753,7 @@ const cw = {
 let wordNodesByIndex = new Map();
 let wordListItems = new Map();
 
-renderTiles(cw.wordTitle, 'WORD LIST', 'chipTile'); // tiles heading
+renderTiles(cw.wordTitle, 'WORD LIST', 'chipTile');
 
 function buildCrossword(rawWords, PAD=2, MAX=40){
   const words = rawWords.map(w=>w.toUpperCase()).filter(Boolean);
@@ -894,7 +892,7 @@ function cwMarkDone(wi){
   }
 }
 
-/* ---------- FIXED FUNCTION ---------- */
+/* ---------- CLEAN cwBuildBoard ---------- */
 function cwBuildBoard(CW, cluePercent){
   cw.board.innerHTML=''; cw.pool.innerHTML=''; cw.feedback.textContent=''; cw.feedback.className='st-result';
   wordNodesByIndex.clear();
@@ -1061,7 +1059,7 @@ function cwStartTouchDrag(tile,e){
   ghost.classList.add('dragging');
   document.body.appendChild(ghost);
 
-  cwDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY:e.clientY-rect.top, lastTarget:null};
+  cwDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY=e.clientY-rect.top, lastTarget:null};
   function move(ev){
     ev.preventDefault();
     ghost.style.left=(ev.clientX-cwDrag.offsetX)+'px';
@@ -1116,19 +1114,17 @@ document.getElementById('cw-backToSetup').addEventListener('click', ()=>{
 buildCrosswordBtn.addEventListener('click', ()=>{
   let words = parseWords(inputWords.value);
   if (!words.length){
-    // fallback to any persisted list if textarea is empty
     const { w } = loadProgress();
     words = w;
   }
   if (!words.length){ alert('Please enter at least one word.'); return; }
 
-  // Update persistent state for crossword path from setup
   stWords = words;
   stSolved = new Set();
   saveProgress(stWords, stSolved);
 
   const cap = parseInt(crossCap.value,10) || 12;
-  const chosen = pickCap(words, cap); // random
+  const chosen = pickCap(words, cap);
   startCrosswordFlow(chosen);
 });
 
@@ -1140,7 +1136,7 @@ function startCrosswordFlow(words){
   document.getElementById('setup').style.display='none';
   document.getElementById('st').style.display='none';
   document.getElementById('cw').style.display='';
-  setSectionLabel('Crossword'); // section chip (uiLabel size)
+  setSectionLabel('Crossword');
   document.getElementById('cw-progress').textContent = `Completed: 0 / ${CW.words.length}`;
   cwBuildBoard(CW, clue);
   cwBuildChecklist(CW.words);
@@ -1148,8 +1144,6 @@ function startCrosswordFlow(words){
 
 /* boot */
 setSectionLabel('Setup');
-setButtonTileLabel(themeBtn, 'Theme', 'chipTile'); // Theme in tiles
-renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
 </script>
 </body>
 </html>
