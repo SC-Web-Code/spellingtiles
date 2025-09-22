@@ -538,7 +538,7 @@ function stStartTouchDrag(tile, e){
   ghost.style.position='fixed'; ghost.style.zIndex='9999'; ghost.style.pointerEvents='none';
   document.body.appendChild(ghost);
   st.pool.appendChild(tile);
-  stDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY=e.clientY-rect.top, lastTarget:null};
+  stDrag={node:tile, ghost, offsetX=e.clientX-rect.left, offsetY=e.clientY-rect.top, lastTarget:null};
   stUpdateGhost(e.clientX,e.clientY);
   function move(ev){ ev.preventDefault(); stUpdateGhost(ev.clientX,ev.clientY); stHighlightDrop(ev.clientX,ev.clientY); }
   function up(ev){ ev.preventDefault(); stFinishTouch(ev.clientX,ev.clientY); cleanup(); }
@@ -552,6 +552,7 @@ function stUpdateGhost(x,y){ if(!stDrag) return; stDrag.ghost.style.left=(x-stDr
 function stIsSlot(el){ return el && el.classList && el.classList.contains('slot'); }
 function stFindDropContainerAt(x,y){
   let el=document.elementFromPoint(x,y);
+  while (el && el.nodeType===3) el = el.parentElement; /* avoid text nodes */
   while (el && !stIsSlot(el) && el !== st.pool && el !== document.body) el=el.parentElement;
   return stIsSlot(el)?el:(el===st.pool?st.pool:null);
 }
@@ -752,7 +753,12 @@ startSpellingBtn.addEventListener('click', ()=>{
    CROSSWORD
    ======================================================================= */
 const COLOR_WORDS = ["PURPLE","GREEN","BLUE","RED","ORANGE","YELLOW","PINK","BLACK","WHITE","BROWN","GREY"];
-let usedColors = new Set();
+
+/* single source of truth for color-bridge usage */
+function getUsedColors(){
+  if (!window.usedColors) window.usedColors = new Set(); /* ensure resettable */
+  return window.usedColors;
+}
 
 const cw = {
   root: document.getElementById('cw'),
@@ -825,9 +831,9 @@ function buildCrossword(rawWords, PAD=2, MAX=40){
   }
   function placeSnap(word,x,y,dir,snap){ for(let i=0;i<word.length;i++){ const gx=x+(dir==='across'?i:0), gy=y+(dir==='down'?i:0); const k=key(gx,gy); if (!snap.has(k)) snap.set(k,word[i]); } }
   function tryColorBridge(word,index){
-    if (!window.usedColors) window.usedColors = new Set();
+    const used = getUsedColors(); /* critical: same set across game */
     for (const color of COLOR_WORDS){
-      if (usedColors.has(color)) continue;
+      if (used.has(color)) continue;
       const snap=new Map(grid); let colorPlaced=false, colorPos=null;
       const entries=Array.from(grid.entries());
       outerColor:
@@ -852,7 +858,7 @@ function buildCrossword(rawWords, PAD=2, MAX=40){
       }
       if (!wordPlaced) continue;
       grid.clear(); for (const [kk,vv] of snap) grid.set(kk,vv);
-      usedColors.add(color);
+      used.add(color); /* track chosen color */
       place(color,colorPos.x,colorPos.y,colorPos.dir,-1);
       place(word,wordPos.x,wordPos.y,wordPos.dir,index);
       return true;
@@ -1148,7 +1154,7 @@ buildCrosswordBtn.addEventListener('click', ()=>{
 
 /* Start crossword flow */
 function startCrosswordFlow(words){
-  window.usedColors = new Set();
+  window.usedColors = new Set(); /* reset shared set explicitly */
   const clue = parseInt(cluePct.value,10) || 30;
   const CW = buildCrossword(words);
   document.getElementById('setup').style.display='none';
