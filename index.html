@@ -39,7 +39,7 @@
   /* HERO TITLE */
   .titleHero{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
 
-  /* ---------- DISPLAY TILE BASE (~2 font sizes smaller) ---------- */
+  /* ---------- DISPLAY TILE BASE ---------- */
   .tile{
     user-select:none;
     width:clamp(36px, 7.5vw, 46px);
@@ -75,9 +75,9 @@
   /* Slightly larger small tiles inside Spelling Test feedback/summary */
   #st .st-result .tile.uiLabel,
   #st #st-summary .tile.uiLabel{
-    width: clamp(24px, 2.6vw, 26px);
-    height: clamp(24px, 2.6vw, 26px);
-    font-size: clamp(16px, 1.6vw, 18px);
+    width: clamp(22px, 2.4vw, 28px);
+    height: clamp(22px, 2.4vw, 28px);
+    font-size: clamp(14px, 1.5vw, 18px);
   }
 
   .inlineTiles{ display:flex; justify-content:center; gap:6px; flex-wrap:wrap; }
@@ -174,8 +174,10 @@
     font-size: clamp(13px, 1.9vw, 16px);
   }
 
-  /* Crossword: spacing */
+  /* Crossword: spacing around the "WORD LIST" heading */
   #cw-wordlist-title{ margin-block: 6px; }
+
+  /* Crossword: spacing for the feedback line ("WELL  DONE") */
   #cw .st-result{ margin: 8px 0; }
   #cw .st-result .inlineTiles{ margin: 4px 0; }
 </style>
@@ -254,6 +256,7 @@ elephant"></textarea>
           </div>
 
           <div id="st-summary" style="display:none">
+            <!-- small tiles (uiLabel) -->
             <div id="st-completeText" class="inlineTiles" aria-live="polite"></div>
             <p id="st-final" style="margin-top:8px;"></p>
             <div id="st-percentText" class="inlineTiles" aria-live="polite"></div>
@@ -311,16 +314,22 @@ elephant"></textarea>
   </div>
 
 <script>
-/* ---------- CSS.escape polyfill (safe) ---------- */
-(function(){
-  if (!window.CSS) window.CSS = {};
-  if (typeof window.CSS.escape !== "function") {
-    // Minimal polyfill: escape non-word characters for use in querySelector
-    window.CSS.escape = function(value){
-      return String(value).replace(/[^a-zA-Z0-9_\-]/g, "\\$&");
-    };
+/* ---------- tiny polyfill (correct) ---------- */
+if (!window.CSS || !CSS.escape) {
+  window.CSS = window.CSS || {};
+  CSS.escape = function (v) { return String(v).replace(/[^a-zA-Z0-9_\-]/g, '\\$&'); };
+}
+
+/* ---------- safe uid (fixes crypto issues on iOS/webview) ---------- */
+function uid() {
+  try {
+    const b = new Uint32Array(1);
+    (self.crypto || window.crypto).getRandomValues(b);
+    return String(b[0]);
+  } catch (e) {
+    return String(Date.now() ^ Math.floor(Math.random() * 1e9));
   }
-})();
+}
 
 /* ---------- colorful tile helpers ---------- */
 function uiHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
@@ -446,7 +455,7 @@ function pickCap(words, cap){  /* always random now */
   const uniq = Array.from(new Set(words.map(w=>w.trim()).filter(Boolean)));
   if (cap >= uniq.length) return uniq;
   const arr = uniq.slice();
-  for (let i=arr.length-1; i>0; i--){ const j = Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  for (let i=arr.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
   return arr.slice(0, cap);
 }
 
@@ -477,6 +486,16 @@ const st = {
 const PREVIEW_SECONDS = 5;
 let stWords=[], stIndex=0, stScore=0, stPreviewing=false, stTilesOriginal=[], stSelected=null;
 let stSolved = new Set();
+let stCurrentDragTile=null;
+
+/* pool drag/drop listeners ATTACHED ONCE */
+st.pool.addEventListener('dragover', e=>{ e.preventDefault(); });
+st.pool.addEventListener('drop', (e)=>{
+  e.preventDefault();
+  const id = e.dataTransfer.getData('text/tile-id') || e.dataTransfer.getData('text/plain');
+  const existing = id ? document.querySelector(`[data-tile-id="${CSS.escape(id)}"]`) : stCurrentDragTile;
+  if (existing){ st.pool.appendChild(existing); stMarkFilled(); stCheckSolved(stWords[stIndex]); }
+});
 
 function stUpdatePills(){
   st.progress.textContent = `Word ${Math.min(stIndex+1, stWords.length)} of ${stWords.length}`;
@@ -485,7 +504,6 @@ function stUpdatePills(){
 function stClearStage(){ st.slots.innerHTML=''; st.pool.innerHTML=''; st.feedback.textContent=''; st.feedback.className='st-result'; stSelected=null; }
 function stDerange(arr){ const a=arr.slice(); if(a.length<2) return a; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function stHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
-let stCurrentDragTile=null;
 
 function stMakeTile(obj){
   const t = document.createElement('div');
@@ -601,7 +619,10 @@ function stBuildWord(word){
   st._removeRefit && st._removeRefit();
   st._removeRefit = ()=> window.removeEventListener('resize', onResize);
 
-  stTilesOriginal = [...word].map((ch, idx) => ({ id:`${ch}-${idx}-${crypto.getRandomValues(new Uint32Array(1))[0]}`, ch, index:idx, total:word.length }));
+  /* ID generation uses uid() (safe) */
+  stTilesOriginal = [...word].map((ch, idx) => ({ id:`${ch}-${idx}-${uid()}`, ch, index:idx, total:word.length }));
+
+  /* preview: show correct, then scatter */
   stPreviewing=true; stSetBtnsDisabled(true);
   stTilesOriginal.forEach((t,i)=>{ const el=stMakeTile(t); el.setAttribute('draggable','false'); st.slots.children[i].appendChild(el); });
   stMarkFilled();
@@ -610,25 +631,15 @@ function stBuildWord(word){
     sec--; st.previewPill.textContent=`👀 Memorise: ${sec}`;
     if (sec<=0){
       clearInterval(timer);
-      [...st.slots.querySelectorAll('.tile')].forEach(t=>t.classList.add('fade-out'));
-      setTimeout(()=>{
-        const der=stDerange(stTilesOriginal);
-        [...st.slots.querySelectorAll('.tile')].forEach(t=>st.pool.appendChild(t));
-        st.pool.innerHTML='';
-        der.forEach((t,i)=> st.pool.appendChild(stMakeTile({...t,index:i,total:der.length})));
-        stSetTilesDraggable(true); stMarkFilled(); st.previewPill.style.display='none'; stPreviewing=false; stSetBtnsDisabled(false);
-        st.feedback.textContent=''; st.feedback.classList.remove('ok','bad');
-      },200);
+      /* new order: remove from slots, clear pool, then add deranged tiles */
+      const der=stDerange(stTilesOriginal);
+      [...st.slots.querySelectorAll('.tile')].forEach(t=>t.remove());
+      st.pool.innerHTML='';
+      der.forEach((t,i)=> st.pool.appendChild(stMakeTile({...t,index:i,total:der.length})));
+      stSetTilesDraggable(true); stMarkFilled(); st.previewPill.style.display='none'; stPreviewing=false; stSetBtnsDisabled(false);
+      st.feedback.textContent=''; st.feedback.classList.remove('ok','bad');
     }
   },1000);
-
-  st.pool.addEventListener('dragover', e=>{ e.preventDefault(); });
-  st.pool.addEventListener('drop', (e)=>{
-    e.preventDefault();
-    const id = e.dataTransfer.getData('text/tile-id') || e.dataTransfer.getData('text/plain');
-    const existing = id ? document.querySelector(`[data-tile-id="${CSS.escape(id)}"]`) : stCurrentDragTile;
-    if (existing){ st.pool.appendChild(existing); stMarkFilled(); stCheckSolved(word); }
-  });
 }
 function stOnDrop(e, slot){
   e.preventDefault(); slot.classList.remove('drop-ok');
@@ -660,7 +671,7 @@ function stCheckSolved(targetWord){
   if (guess === targetWord.toUpperCase()){
     stShowCorrect();
     stScore++; stSolved.add(targetWord);
-    saveProgress(stWords, stSolved);
+    saveProgress(stWords, stSolved); // persist as you go
     stUpdatePills(); setTimeout(stNextWord, 650);
   } else {
     st.feedback.textContent='🧠 Not quite — try swapping some tiles.'; st.feedback.className='st-result bad';
@@ -671,6 +682,7 @@ function stNextWord(){
   stIndex++; if (stIndex>=stWords.length) return stFinish();
   stUpdatePills(); stBuildWord(stWords[stIndex]);
 }
+/* COMPLETE + percentage in small tiles (uiLabel size) */
 function stFinish(){
   const pct = Math.round((stScore/stWords.length)*100);
   st.summary.style.display='block';
@@ -683,14 +695,14 @@ function stFinish(){
   st.percentText.innerHTML='';
   renderTiles(st.percentText, `${pct}%`, 'uiLabel');
 
+  // persist final state too
   saveProgress(stWords, stSolved);
 }
 
 st.reshuffleBtn.addEventListener('click', ()=>{
   if (stPreviewing) return;
   [...st.slots.querySelectorAll('.tile')].forEach(t=>st.pool.appendChild(t));
-  st.pool.innerHTML='';
-  const der=stDerange(stTilesOriginal);
+  st.pool.innerHTML=''; const der=stDerange(stTilesOriginal);
   der.forEach((t,i)=> st.pool.appendChild(stMakeTile({...t,index:i,total:der.length})));
   stMarkFilled(); st.feedback.textContent=''; st.feedback.classList.remove('ok','bad'); stSelected=null;
 });
@@ -707,6 +719,7 @@ st.editBtn.addEventListener('click', ()=>{
 const stBuildBtn = document.getElementById('st-buildCrosswordFromHere');
 stBuildBtn.textContent = 'Build Crossword';
 st.buildCWHere.addEventListener('click', ()=>{
+  // fallback to persisted data if needed
   if (!stWords.length){
     const { w, s } = loadProgress();
     stWords = w; stSolved = s;
@@ -714,7 +727,7 @@ st.buildCWHere.addEventListener('click', ()=>{
   const useMode = st.afterUseMode.value;
   let src = useMode==='correct' ? stWords.filter(w=>stSolved.has(w)) : stWords.slice();
   const cap = parseInt(st.afterCap.value,10) || 12;
-  src = pickCap(src, cap);
+  src = pickCap(src, cap);  // random
   startCrosswordFlow(src);
 });
 
@@ -724,12 +737,14 @@ startSpellingBtn.addEventListener('click', ()=>{
   if (!words.length){ alert('Please enter at least one word.'); return; }
   stWords = words;
   stIndex=0; stScore=0; stSolved.clear();
+
+  // persist immediately
   saveProgress(stWords, stSolved);
 
   document.getElementById('setup').style.display='none';
   document.getElementById('cw').style.display='none';
   document.getElementById('st').style.display='';
-  setSectionLabel('Spelling Test');
+  setSectionLabel('Spelling Test'); // section chip uses uiLabel tiles
   stUpdatePills(); stBuildWord(stWords[0]);
 });
 
@@ -753,7 +768,7 @@ const cw = {
 let wordNodesByIndex = new Map();
 let wordListItems = new Map();
 
-renderTiles(cw.wordTitle, 'WORD LIST', 'chipTile');
+renderTiles(cw.wordTitle, 'WORD LIST', 'chipTile'); // tiles heading
 
 function buildCrossword(rawWords, PAD=2, MAX=40){
   const words = rawWords.map(w=>w.toUpperCase()).filter(Boolean);
@@ -892,7 +907,7 @@ function cwMarkDone(wi){
   }
 }
 
-/* ---------- CLEAN cwBuildBoard ---------- */
+/* ---------- FIXED FUNCTION ---------- */
 function cwBuildBoard(CW, cluePercent){
   cw.board.innerHTML=''; cw.pool.innerHTML=''; cw.feedback.textContent=''; cw.feedback.className='st-result';
   wordNodesByIndex.clear();
@@ -1059,7 +1074,7 @@ function cwStartTouchDrag(tile,e){
   ghost.classList.add('dragging');
   document.body.appendChild(ghost);
 
-  cwDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY=e.clientY-rect.top, lastTarget:null};
+  cwDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY:e.clientY-rect.top, lastTarget:null};
   function move(ev){
     ev.preventDefault();
     ghost.style.left=(ev.clientX-cwDrag.offsetX)+'px';
@@ -1079,7 +1094,8 @@ function cwStartTouchDrag(tile,e){
 }
 function cwFindSlotAt(x,y){
   let el=document.elementFromPoint(x,y);
-  while (el && !el.classList?.contains('slot') && el !== cw.pool && el !== document.body) el=el.parentElement;
+  while (el && el.nodeType === 3) el = el.parentElement; // skip text nodes
+  while (el && !el.classList?.contains('slot') && el !== cw.pool && el !== document.body) el = el.parentElement;
   return el && el.classList?.contains('slot') ? el : null;
 }
 function cwHighlight(x,y){
@@ -1114,17 +1130,19 @@ document.getElementById('cw-backToSetup').addEventListener('click', ()=>{
 buildCrosswordBtn.addEventListener('click', ()=>{
   let words = parseWords(inputWords.value);
   if (!words.length){
+    // fallback to any persisted list if textarea is empty
     const { w } = loadProgress();
     words = w;
   }
   if (!words.length){ alert('Please enter at least one word.'); return; }
 
+  // Update persistent state for crossword path from setup
   stWords = words;
   stSolved = new Set();
   saveProgress(stWords, stSolved);
 
   const cap = parseInt(crossCap.value,10) || 12;
-  const chosen = pickCap(words, cap);
+  const chosen = pickCap(words, cap); // random
   startCrosswordFlow(chosen);
 });
 
@@ -1136,7 +1154,7 @@ function startCrosswordFlow(words){
   document.getElementById('setup').style.display='none';
   document.getElementById('st').style.display='none';
   document.getElementById('cw').style.display='';
-  setSectionLabel('Crossword');
+  setSectionLabel('Crossword'); // section chip (uiLabel size)
   document.getElementById('cw-progress').textContent = `Completed: 0 / ${CW.words.length}`;
   cwBuildBoard(CW, clue);
   cwBuildChecklist(CW.words);
@@ -1144,6 +1162,8 @@ function startCrosswordFlow(words){
 
 /* boot */
 setSectionLabel('Setup');
+setButtonTileLabel(themeBtn, 'Theme', 'chipTile'); // Theme in tiles
+renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
 </script>
 </body>
 </html>
