@@ -911,8 +911,7 @@ function cwBuildBoard(CW, cluePercent){
 
   const colorKeySet=new Set();
   for (const p of CW.placed){ if (p.index>=0) continue; for (let i=0;i*p.word.length;i++){ /* noop - safety */ } }
-  for (const p of CW.placed){ if (p.index>=0) continue;
-    for (let i=0;i<p.word.length;i++){
+  for (let i=0;i<p.word.length;i++){
       const x=p.x+(p.dir==='across'?i:0), y=p.y+(p.dir==='down'?i:0);
       colorKeySet.add(x+','+y);
     }
