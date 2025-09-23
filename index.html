@@ -15,13 +15,14 @@
     --pill:#ffffffaa; --pill-brd:#ffffff88;
     --btn:#ffffffcc; --btn-brd:#ffffff88;
 
-    --slot-bg:#ffffff77;  /* crossword slots */
-    --given-bg:#d1fae5;   /* prefilled cells (incl. colour bridges) */
+    --slot-bg:#ffffff77;     /* grid slots */
+    --given-bg:#d1fae5;      /* prefilled cells (incl. color bridges) */
 
     --ok:#10b981; --bad:#ef4444;
   }
 
   html,body{height:100%;margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text)}
+  *{-webkit-tap-highlight-color:transparent}
   body{
     background:
       radial-gradient(1200px 800px at 10% 10%, #ffedd5, transparent 60%),
@@ -32,14 +33,16 @@
     display:flex; justify-content:center; padding:min(28px,5vw);
   }
   @keyframes bgMove{0%{background-position:0% 40%}100%{background-position:100% 60%}}
-
   .wrap{ width:min(1200px,96vw); }
   .hidden{ display:none !important; }
 
-  /* HERO TITLE */
+  /* disable text selection globally while dragging */
+  .no-select, .no-select *{ user-select:none !important; -webkit-user-select:none !important; }
+
+  /* hero title */
   .titleHero{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
 
-  /* ---------- DISPLAY TILE BASE (made ~2 font sizes smaller) ---------- */
+  /* ---- tile visual base (unified across app) ---- */
   .tile{
     user-select:none;
     width:clamp(36px, 7.5vw, 46px);
@@ -57,29 +60,20 @@
     font-size:clamp(22px,4.8vw,34px);
     box-shadow:0 14px 26px rgba(0,0,0,.22);
   }
-  .tile.chipTile{ /* Theme button size */
+  .tile.chipTile{
     width:clamp(22px,4vw,28px);
     height:clamp(22px,4vw,28px);
     border-radius:8px;
     font-size:clamp(12px,3.2vw,16px);
     box-shadow:0 8px 16px rgba(0,0,0,.18);
   }
-  .tile.uiLabel{ /* small (for CORRECT / COMPLETE / %) */
-    width:clamp(14px, 1.8vw, 20px);
-    height:clamp(14px, 1.8vw, 20px);
+  .tile.uiLabel{
+    width:clamp(18px, 2.2vw, 22px);
+    height:clamp(18px, 2.2vw, 22px);
     border-radius:6px;
-    font-size:clamp(10px, 1.2vw, 12px);
+    font-size:clamp(12px, 1.6vw, 14px);
     box-shadow:0 5px 10px rgba(0,0,0,.12);
   }
-
-  /* Slightly larger small tiles inside Spelling Test feedback/summary */
-  #st .st-result .tile.uiLabel,
-  #st #st-summary .tile.uiLabel{
-    width: clamp(24px, 2.6vw, 26px);
-    height: clamp(24px, 2.6vw, 26px);
-    font-size: clamp(16px, 1.6vw, 18px);
-  }
-
   .inlineTiles{ display:flex; justify-content:center; gap:6px; flex-wrap:wrap; }
 
   .card{ position:relative; border-radius:28px; padding:clamp(18px,3vw,32px);
@@ -109,15 +103,14 @@
 
   textarea{width:100%;min-height:130px;resize:vertical;font-size:16px;font-weight:600;background:#ffffffc9;border:2px dashed #ffffffaa;color:#0b1220;border-radius:16px;padding:12px; box-sizing:border-box;}
 
-  /* layout */
   .row-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .two-col{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
   @media(min-width:1000px){ .two-col{grid-template-columns:minmax(340px,1.1fr) minmax(300px,.9fr);} }
 
-  /* gameplay tiles */
   .tile.dragging{opacity:.92; transform:scale(1.08) rotate(1.2deg); box-shadow:0 16px 26px rgba(0,0,0,.28); filter:saturate(1.2)}
+  .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; }
 
-  /* Spelling Tiles sizing */
+  /* Spelling Test */
   #st{ --st-size: 64px; --st-min: 22px; --st-max: 72px; }
   .slots, .pool{ display:flex; gap:min(12px,2.8vw); min-height:80px; justify-content:center; }
   .slots{ flex-wrap:nowrap; overflow-x:auto; }
@@ -127,19 +120,9 @@
     font-size: calc(var(--st-size)*0.6); transition: transform .12s ease, background .2s ease, border-color .2s ease; }
   .slot.drop-ok{ border-color:#22d3ee; background:#ffffff55; transform:scale(1.05); }
   .slot.filled{ border-style:solid; border-color:#ffffff; background:#ffffffbb; }
-
-  /* IMPORTANT: scope big tile sizing only to gameplay tiles (slots/pool) */
-  #st .slots .tile,
-  #st .pool .tile{
-    width: var(--st-size);
-    height: var(--st-size);
-    font-size: calc(var(--st-size)*0.6);
-    border-radius:18px;
-  }
-
+  #st .slots .tile, #st .pool .tile{ width:var(--st-size); height:var(--st-size); font-size:calc(var(--st-size)*0.6); border-radius:18px; }
   .st-result{ text-align:center; font-weight:1000; min-height:34px; }
   .ok{color:var(--ok)} .bad{color:var(--bad)}
-  .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; }
 
   /* Crossword */
   .boardWrap{display:grid;place-items:center;overflow:auto}
@@ -151,15 +134,7 @@
   .cell.slot{border-style:dashed; background:var(--slot-bg)}
   .cell.slot.drop-ok{border-color:#22d3ee;background:#ffffffaa;transform:scale(1.04)}
   .cw-pool{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-
-  /* Lock crossword tile visuals (unchanged from gameplay scale) */
-  #cw .pool .tile,
-  #cw .board .tile{
-    width:clamp(38px,8vw,48px);
-    height:clamp(38px,8vw,48px);
-    font-size:clamp(18px,5.6vw,24px);
-    border-radius:10px;
-  }
+  #cw .pool .tile, #cw .board .tile{ width:clamp(38px,8vw,48px); height:clamp(38px,8vw,48px); font-size:clamp(18px,5.6vw,24px); border-radius:10px; }
 
   .checklist{ background:#ffffff88; border:1px solid #ffffffcc; border-radius:16px; padding:12px; backdrop-filter: blur(6px); }
   .wordItem{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:12px; background:#ffffffc9; border:1px solid #ffffff; font-weight:900; margin-bottom:8px }
@@ -167,32 +142,24 @@
   .wordItem.done{ background:#d1fae5; border-color:#bbf7d0 }
   .wordItem.done .mark{ border-color:#10b981; background:#10b981; color:#fff }
 
-/* Bigger tiles for the section chip (Setup / Spelling Test / Crossword) */
-#sectionChip .tile.uiLabel{
-  width: clamp(20px, 2.6vw, 28px);
-  height: clamp(20px, 2.6vw, 28px);
-  font-size: clamp(13px, 1.9vw, 16px);
-}
+  /* Section chip */
+  #sectionChip .tile.uiLabel{ width:clamp(20px,2.6vw,28px); height:clamp(20px,2.6vw,28px); font-size:clamp(13px,1.9vw,16px); }
 
-
-/* Crossword: spacing around the "WORD LIST" heading */
-#cw-wordlist-title{
-  margin-block: 6px; /* top & bottom */
-}
-
-/* Crossword: spacing for the feedback line ("WELL  DONE") */
-#cw .st-result{
-  margin: 8px 0;      /* ensure it doesn’t butt against neighbors */
-}
-#cw .st-result .inlineTiles{
-  margin: 4px 0;      /* extra cushion for the chip-tile row itself */
-}
-
+  /* Word Search */
+  #ws .grid{display:grid;gap:6px;background:#ffffff66;padding:12px;border-radius:16px;touch-action:none}
+  #ws .gcell{
+    width:clamp(34px,7.2vw,44px); height:clamp(34px,7.2vw,44px);
+    display:grid; place-items:center;
+    border:3px solid #fff;border-radius:10px;font-weight:1000;font-size:clamp(18px,5.2vw,22px);background:#ffffffaa;
+    user-select:none;
+  }
+  #ws .gcell.sel{ background:#fde68a; border-color:#facc15; }
+  #ws .gcell.found{ background:#bbf7d0; border-color:#10b981; }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- HERO TITLE -->
+    <!-- HERO -->
     <div id="heroTitle" class="titleHero" aria-label="Spelling Tiles"></div>
 
     <div class="card">
@@ -206,7 +173,7 @@
         </div>
       </div>
 
-      <p class="subtitle">Step 1: Spelling Test. Step 2: Build a Crossword from the same list (with a max word cap).</p>
+      <p class="subtitle">Step 1: Spelling Test. Step 2: Build a Crossword or Word Search from the same list.</p>
 
       <!-- SETUP -->
       <div id="setup">
@@ -221,30 +188,42 @@ elephant"></textarea>
             <div class="controls">
               <button id="startSpellingBtn" class="accent">START</button>
               <button id="buildCrosswordBtn">CROSSWORD</button>
+              <button id="buildWordSearchBtn">WORD SEARCH</button>
             </div>
           </div>
 
           <div>
-            <div class="pill" style="display:block">Crossword options</div>
+            <div class="pill" style="display:block">Puzzle options</div>
             <div class="controls">
-              <label class="pill" style="gap:6px">Max words:
-                <input id="crossCap" type="number" min="3" max="30" value="12" style="width:84px;padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
+              <label class="pill" style="gap:6px">Max words (CW/WS):
+                <input id="capInput" type="number" min="3" max="30" value="12" style="width:84px;padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
               </label>
             </div>
             <div class="controls">
-              <span class="pill">Prefilled letters:
+              <span class="pill">Crossword prefilled:
                 <strong id="cluePctLabel">30%</strong>
               </span>
               <input id="cluePct" type="range" min="0" max="80" value="30" style="accent-color:#8b5cf6; width:220px">
+            </div>
+            <div class="controls">
+              <label class="pill" style="gap:6px">Word Search max grid:
+                <input id="wsMax" type="number" min="8" max="16" value="16" style="width:84px;padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
+              </label>
+              <label class="pill" style="gap:6px">Allow diagonals
+                <input id="wsDiag" type="checkbox" checked>
+              </label>
+              <label class="pill" style="gap:6px">Allow backwards
+                <input id="wsBack" type="checkbox" checked>
+              </label>
             </div>
           </div>
         </div>
       </div>
 
       <!-- SPELLING TEST -->
-      <div id="st" style="display:none">
+      <div id="st" class="hidden">
         <div class="row-top">
-          <p class="subtitle st-subtitle">Drag or tap tiles into the slots to spell each word.</p>
+          <p class="subtitle">Drag or tap tiles into the slots to spell each word.</p>
           <span class="pill" id="st-progress">Word 1 of 1</span>
         </div>
 
@@ -264,7 +243,6 @@ elephant"></textarea>
           </div>
 
           <div id="st-summary" style="display:none">
-            <!-- small tiles (uiLabel) -->
             <div id="st-completeText" class="inlineTiles" aria-live="polite"></div>
             <p id="st-final" style="margin-top:8px;"></p>
             <div id="st-percentText" class="inlineTiles" aria-live="polite"></div>
@@ -282,6 +260,7 @@ elephant"></textarea>
               </div>
               <div class="controls">
                 <button id="st-buildCrosswordFromHere" class="accent">Build Crossword</button>
+                <button id="st-buildWordSearchFromHere">Build Word Search</button>
                 <button id="st-editBtn">EDIT</button>
                 <button id="st-retryBtn">RETRY</button>
               </div>
@@ -291,7 +270,7 @@ elephant"></textarea>
       </div>
 
       <!-- CROSSWORD -->
-      <div id="cw" style="display:none">
+      <div id="cw" class="hidden">
         <div class="row-top">
           <p class="subtitle">Drag or tap letters into the grid. Each finished word ticks off on the right.</p>
           <span class="pill" id="cw-progress">Completed: 0 / 0</span>
@@ -318,17 +297,46 @@ elephant"></textarea>
         <div class="st-result" id="cw-feedback"></div>
       </div>
 
+      <!-- WORD SEARCH -->
+      <div id="ws" class="hidden">
+        <div class="row-top">
+          <p class="subtitle">Drag your finger (or mouse) across letters to find words.</p>
+          <span class="pill" id="ws-progress">Found: 0 / 0</span>
+        </div>
+
+        <div class="controls" style="justify-content:space-between">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button id="ws-reshuffleBtn">Reshuffle</button>
+          </div>
+          <div>
+            <button id="ws-backToSetup">BACK</button>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div id="ws-gridWrap" class="boardWrap">
+            <div id="ws-grid" class="grid" role="grid" aria-label="Word Search Grid"></div>
+          </div>
+          <div class="checklist">
+            <div id="ws-wordlist-title" class="inlineTiles" aria-label="Word List"></div>
+            <div id="ws-listUI" class="ws-list"></div>
+          </div>
+        </div>
+
+        <div class="st-result" id="ws-feedback"></div>
+      </div>
+
     </div>
   </div>
 
 <script>
-/* ---------- tiny polyfill ---------- */
+/* -------------------- Polyfill for CSS.escape on older Safari -------------------- */
 if (!window.CSS || !CSS.escape) {
   window.CSS = window.CSS || {};
   CSS.escape = CSS.escape || function (v) { return String(v).replace(/[^a-zA-Z0-9_\\-]/g, '\\\\$&'); };
 }
 
-/* ---------- colorful tile helpers ---------- */
+/* -------------------- Quick UI tile helpers -------------------- */
 function uiHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
 function makeUITile(letter, i, total, cls){
   const t=document.createElement('div');
@@ -362,7 +370,7 @@ function setButtonTileLabel(btn, text, sizeClass='chipTile'){
   btn.setAttribute('aria-label', text);
 }
 
-/* ---------- THEMES ---------- */
+/* -------------------- Theme handling -------------------- */
 const themes = [
   { name:"Candy", bg:"linear-gradient(120deg,#22d3ee 0%,#a78bfa 45%,#f472b6 100%)",
     brand:"linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6)",
@@ -406,32 +414,37 @@ function applyTheme(t){
 }
 themeBtn.addEventListener('click', ()=>{ themeIndex=(themeIndex+1)%themes.length; applyTheme(themes[themeIndex]); });
 applyTheme(themes[themeIndex]);
-setButtonTileLabel(themeBtn, 'Theme', 'chipTile'); // Theme (chipTile size)
+setButtonTileLabel(themeBtn, 'Theme', 'chipTile');
 
-/* ---------- hero + section chip ---------- */
-renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile'); // big header
+/* -------------------- Section label + hero -------------------- */
+renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
 const sectionChip = document.getElementById('sectionChip');
 function setSectionLabel(text){
   sectionChip.innerHTML='';
   const span=document.createElement('span'); span.className='inlineTiles';
-  renderTiles(span, text, 'uiLabel'); // small tiles for section chip
+  renderTiles(span, text, 'uiLabel');
   sectionChip.appendChild(span);
 }
 
-/* ---------- helpers ---------- */
+/* -------------------- Common helpers -------------------- */
 const inputWords = document.getElementById('inputWords');
 const startSpellingBtn = document.getElementById('startSpellingBtn');
 const buildCrosswordBtn = document.getElementById('buildCrosswordBtn');
+const buildWordSearchBtn = document.getElementById('buildWordSearchBtn');
 
-const crossCap = document.getElementById('crossCap');
+const capInput = document.getElementById('capInput');
 const cluePct = document.getElementById('cluePct');
 const cluePctLabel = document.getElementById('cluePctLabel');
 cluePct.addEventListener('input',()=> cluePctLabel.textContent = cluePct.value + '%');
 
+const wsMaxEl = document.getElementById('wsMax');
+const wsDiagEl = document.getElementById('wsDiag');
+const wsBackEl = document.getElementById('wsBack');
+
 function parseWords(raw){
   return raw.split(/[\n,]+/).map(w=>w.trim()).filter(Boolean).map(w=>w.replace(/\s+/g,''));
 }
-function pickCap(words, cap){  /* always random now */
+function pickCap(words, cap){
   const uniq = Array.from(new Set(words.map(w=>w.trim()).filter(Boolean)));
   if (cap >= uniq.length) return uniq;
   const arr = uniq.slice();
@@ -439,9 +452,11 @@ function pickCap(words, cap){  /* always random now */
   return arr.slice(0, cap);
 }
 
-/* =======================================================================
-   SPELLING TEST
-   ======================================================================= */
+/* utility: temporarily disable selection while dragging */
+function enableNoSelect(){ document.body.classList.add('no-select'); }
+function disableNoSelect(){ document.body.classList.remove('no-select'); }
+
+/* -------------------- SPELLING TEST -------------------- */
 const st = {
   root: document.getElementById('st'),
   slots: document.getElementById('st-slots'),
@@ -457,11 +472,11 @@ const st = {
   percentText: document.getElementById('st-percentText'),
   completeText: document.getElementById('st-completeText'),
   buildCWHere: document.getElementById('st-buildCrosswordFromHere'),
+  buildWSHere: document.getElementById('st-buildWordSearchFromHere'),
   editBtn: document.getElementById('st-editBtn'),
   retryBtn: document.getElementById('st-retryBtn'),
   afterUseMode: document.getElementById('afterUseMode'),
   afterCap: document.getElementById('afterCap'),
-  prompt: document.getElementById('st-prompt'),
 };
 const PREVIEW_SECONDS = 5;
 let stWords=[], stIndex=0, stScore=0, stPreviewing=false, stTilesOriginal=[], stSelected=null;
@@ -472,10 +487,10 @@ function stUpdatePills(){
   st.scorePill.textContent = `⭐ Score: ${stScore}`;
 }
 function stClearStage(){ st.slots.innerHTML=''; st.pool.innerHTML=''; st.feedback.textContent=''; st.feedback.className='st-result'; stSelected=null; }
-function stDerange(arr){ const a=arr.slice(); if(a.length<2) return a; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function stDerange(a){ const arr=a.slice(); for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
 function stHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
-let stCurrentDragTile=null;
 
+let stCurrentDragTile=null;
 function stMakeTile(obj){
   const t = document.createElement('div');
   t.className='tile'; t.textContent=obj.ch.toUpperCase();
@@ -486,17 +501,26 @@ function stMakeTile(obj){
   t.style.borderColor = `hsla(${h}, 95%, 92%, .9)`;
 
   t.addEventListener('dragstart', e=>{
+    enableNoSelect();
     t.classList.add('dragging'); stCurrentDragTile = t;
     try { e.dataTransfer.setData('text/plain', obj.id); } catch(_) {}
     try { e.dataTransfer.setData('text/tile-id', obj.id); } catch(_) {}
     e.dataTransfer.effectAllowed='move';
   });
-  t.addEventListener('dragend', ()=>{ t.classList.remove('dragging'); stCurrentDragTile=null; });
+  t.addEventListener('dragend', ()=>{ t.classList.remove('dragging'); stCurrentDragTile=null; disableNoSelect(); });
 
-  t.addEventListener('click', ()=>{ if(stPreviewing) return; if(stSelected===t){ t.classList.remove('dragging'); stSelected=null; return;} if(stSelected) stSelected.classList.remove('dragging'); stSelected=t; t.classList.add('dragging'); });
+  t.addEventListener('click', ()=>{
+    if(stPreviewing) return;
+    if(stSelected===t){ t.classList.remove('dragging'); stSelected=null; return; }
+    if(stSelected) stSelected.classList.remove('dragging');
+    stSelected=t; t.classList.add('dragging');
+  });
 
   t.addEventListener('pointerdown', e=>{
-    if (e.pointerType==='mouse') return; if (stPreviewing) return; e.preventDefault(); stStartTouchDrag(t, e);
+    if (e.pointerType==='mouse') return;
+    if (stPreviewing) return;
+    e.preventDefault(); enableNoSelect();
+    stStartTouchDrag(t, e);
   });
   return t;
 }
@@ -506,14 +530,13 @@ function stStartTouchDrag(tile, e){
   const ghost = tile.cloneNode(true);
   ghost.classList.add('drag-ghost','dragging');
   ghost.style.width=rect.width+'px'; ghost.style.height=rect.height+'px';
-  ghost.style.position='fixed'; ghost.style.zIndex='9999'; ghost.style.pointerEvents='none';
+  ghost.style.left=rect.left+'px'; ghost.style.top=rect.top+'px';
   document.body.appendChild(ghost);
   st.pool.appendChild(tile);
   stDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY:e.clientY-rect.top, lastTarget:null};
-  stUpdateGhost(e.clientX,e.clientY);
   function move(ev){ ev.preventDefault(); stUpdateGhost(ev.clientX,ev.clientY); stHighlightDrop(ev.clientX,ev.clientY); }
-  function up(ev){ ev.preventDefault(); stFinishTouch(ev.clientX,ev.clientY); cleanup(); }
-  function cancel(){ stCancelTouch(); cleanup(); }
+  function up(ev){ ev.preventDefault(); stFinishTouch(ev.clientX,ev.clientY); cleanup(); disableNoSelect(); }
+  function cancel(){ stCancelTouch(); cleanup(); disableNoSelect(); }
   function cleanup(){ document.removeEventListener('pointermove', move, {passive:false}); document.removeEventListener('pointerup', up, {passive:false}); document.removeEventListener('pointercancel', cancel); }
   document.addEventListener('pointermove', move, {passive:false});
   document.addEventListener('pointerup', up, {passive:false});
@@ -537,9 +560,7 @@ function stFinishTouchDragTo(target){
   if (stIsSlot(target)) {
     if (target.firstElementChild) st.pool.appendChild(target.firstElementChild);
     target.appendChild(stDrag.node);
-  } else {
-    st.pool.appendChild(stDrag.node);
-  }
+  } else { st.pool.appendChild(stDrag.node); }
 }
 function stFinishTouch(x,y){
   if(!stDrag) return;
@@ -552,8 +573,6 @@ function stFinishTouch(x,y){
   stDrag=null;
 }
 function stCancelTouch(){ if(!stDrag) return; stDrag.ghost.remove(); st.pool.appendChild(stDrag.node); stDrag=null; }
-
-/* auto tile sizing per word */
 function stFitTileSizeForWord(n){
   const container = st.slots;
   const styles = getComputedStyle(container);
@@ -565,7 +584,6 @@ function stFitTileSizeForWord(n){
   const size = Math.max(minSize, Math.min(maxSize, Math.floor((W - gap*(n-1)) / n)));
   container.style.setProperty('--st-size', size + 'px');
 }
-
 function stBuildWord(word){
   stClearStage();
 
@@ -577,7 +595,10 @@ function stBuildWord(word){
     slot.addEventListener('drop', e=> stOnDrop(e, slot));
     slot.addEventListener('click', ()=>{
       if (stPreviewing) return;
-      if (!stSelected){ if (slot.firstElementChild){ st.pool.appendChild(slot.firstElementChild); stMarkFilled(); stCheckSolved(word);} return; }
+      if (!stSelected){
+        if (slot.firstElementChild){ st.pool.appendChild(slot.firstElementChild); stMarkFilled(); stCheckSolved(word); }
+        return;
+      }
       if (slot.firstElementChild) st.pool.appendChild(slot.firstElementChild);
       slot.appendChild(stSelected); stSelected.classList.remove('dragging'); stSelected=null; stMarkFilled(); stCheckSolved(word);
     });
@@ -611,7 +632,7 @@ function stBuildWord(word){
     }
   },1000);
 
-  st.pool.addEventListener('dragover', e=>{ e.preventDefault(); });
+  st.pool.addEventListener('dragover', e=> e.preventDefault());
   st.pool.addEventListener('drop', (e)=>{
     e.preventDefault();
     const id = e.dataTransfer.getData('text/tile-id') || e.dataTransfer.getData('text/plain');
@@ -632,16 +653,12 @@ function stSetBtnsDisabled(d){ st.reshuffleBtn.disabled=d; st.skipBtn.disabled=d
 function stMarkFilled(){ [...st.slots.children].forEach(s=>s.classList.toggle('filled', !!s.firstElementChild)); }
 function stGetAnswer(){ return [...st.slots.children].map(s=>s.firstElementChild ? s.firstElementChild.dataset.letter : '·').join(''); }
 function stComplete(){ return [...st.slots.children].every(s=>!!s.firstElementChild); }
-
-/* CORRECT in small tiles (uiLabel size) */
 function stShowCorrect(){
-  st.feedback.className='st-result';
-  st.feedback.innerHTML='';
+  st.feedback.className='st-result'; st.feedback.innerHTML='';
   const span=document.createElement('div'); span.className='inlineTiles';
   renderTiles(span, 'CORRECT', 'uiLabel');
   st.feedback.appendChild(span);
 }
-
 function stCheckSolved(targetWord){
   if (stPreviewing) return;
   if (!stComplete()){ st.feedback.textContent=''; st.feedback.className='st-result'; return; }
@@ -658,20 +675,13 @@ function stNextWord(){
   stIndex++; if (stIndex>=stWords.length) return stFinish();
   stUpdatePills(); stBuildWord(stWords[stIndex]);
 }
-/* COMPLETE + percentage in small tiles (uiLabel size) */
 function stFinish(){
   const pct = Math.round((stScore/stWords.length)*100);
   st.summary.style.display='block';
-
-  st.completeText.innerHTML='';
-  renderTiles(st.completeText, 'COMPLETE', 'uiLabel');
-
+  st.completeText.innerHTML=''; renderTiles(st.completeText, 'COMPLETE', 'uiLabel');
   st.final.textContent = `You scored ${stScore} of ${stWords.length}.`;
-
-  st.percentText.innerHTML='';
-  renderTiles(st.percentText, `${pct}%`, 'uiLabel');
+  st.percentText.innerHTML=''; renderTiles(st.percentText, `${pct}%`, 'uiLabel');
 }
-
 st.reshuffleBtn.addEventListener('click', ()=>{
   if (stPreviewing) return;
   [...st.slots.querySelectorAll('.tile')].forEach(t=>st.pool.appendChild(t));
@@ -684,40 +694,29 @@ st.retryBtn.addEventListener('click', ()=>{
   stIndex=0; stScore=0; stSolved.clear(); st.summary.style.display='none';
   stUpdatePills(); stBuildWord(stWords[0]);
 });
-st.editBtn.addEventListener('click', ()=>{
-  document.getElementById('st').style.display='none';
-  document.getElementById('setup').style.display='';
-  setSectionLabel('Setup');
-});
-const stBuildBtn = document.getElementById('st-buildCrosswordFromHere');
-stBuildBtn.textContent = 'Build Crossword';
-st.buildCWHere.addEventListener('click', ()=>{
+st.editBtn.addEventListener('click', ()=> showOnly('setup'));
+document.getElementById('st-buildCrosswordFromHere').addEventListener('click', ()=>{
   const useMode = st.afterUseMode.value;
   let src = useMode==='correct' ? stWords.filter(w=>stSolved.has(w)) : stWords.slice();
   const cap = parseInt(st.afterCap.value,10) || 12;
-  src = pickCap(src, cap);  // random
+  src = pickCap(src, cap);
   startCrosswordFlow(src);
 });
-
-/* Start Spelling from setup */
+document.getElementById('st-buildWordSearchFromHere').addEventListener('click', ()=>{
+  const useMode = st.afterUseMode.value;
+  let src = useMode==='correct' ? stWords.filter(w=>stSolved.has(w)) : stWords.slice();
+  const cap = parseInt(st.afterCap.value,10) || 12;
+  src = pickCap(src, cap);
+  startWordSearchFlow(src);
+});
 startSpellingBtn.addEventListener('click', ()=>{
   const words = parseWords(inputWords.value);
   if (!words.length){ alert('Please enter at least one word.'); return; }
-  stWords = words;
-  stIndex=0; stScore=0; stSolved.clear();
-  document.getElementById('setup').style.display='none';
-  document.getElementById('cw').style.display='none';
-  document.getElementById('st').style.display='';
-  setSectionLabel('Spelling Test'); // section chip uses uiLabel tiles
-  stUpdatePills(); stBuildWord(stWords[0]);
+  stWords = words; stIndex=0; stScore=0; stSolved.clear();
+  showOnly('st'); stUpdatePills(); stBuildWord(stWords[0]);
 });
 
-/* =======================================================================
-   CROSSWORD
-   ======================================================================= */
-const COLOR_WORDS = ["PURPLE","GREEN","BLUE","RED","ORANGE","YELLOW","PINK","BLACK","WHITE","BROWN","GREY"];
-let usedColors = new Set();
-
+/* -------------------- CROSSWORD -------------------- */
 const cw = {
   root: document.getElementById('cw'),
   board: document.getElementById('cw-board'),
@@ -729,12 +728,14 @@ const cw = {
   backBtn: document.getElementById('cw-backToSetup'),
   wordTitle: document.getElementById('cw-wordlist-title'),
 };
+renderTiles(cw.wordTitle, 'WORD LIST', 'chipTile');
+
 let wordNodesByIndex = new Map();
 let wordListItems = new Map();
+const COLOR_WORDS = ["PURPLE","GREEN","BLUE","RED","ORANGE","YELLOW","PINK","BLACK","WHITE","BROWN","GREY"];
+let usedColors = new Set();
 
-renderTiles(cw.wordTitle, 'WORD LIST', 'chipTile'); // tiles heading
-
-function buildCrossword(rawWords, PAD=2, MAX=40){
+function buildCrossword(rawWords, MAX=40){
   const words = rawWords.map(w=>w.toUpperCase()).filter(Boolean);
   words.sort((a,b)=>b.length-a.length);
   const grid=new Map(), placed=[];
@@ -773,8 +774,7 @@ function buildCrossword(rawWords, PAD=2, MAX=40){
   }
   function cellsOf(word,x,y,dir){ const out=[]; for(let i=0;i<word.length;i++){ out.push({x:x+(dir==='across'?i:0), y:y+(dir==='down'?i:0), ch:word[i]}); } return out; }
   function canPlaceSnap(word,x,y,dir,snap){
-    const hasS=(xx,yy)=>snap.has(key(xx,yy));
-    const getS=(xx,yy)=>snap.get(key(xx,yy));
+    const hasS=(xx,yy)=>snap.has(key(xx,yy)); const getS=(xx,yy)=>snap.get(key(xx,yy));
     for(let i=0;i<word.length;i++){
       const gx=x+(dir==='across'?i:0), gy=y+(dir==='down'?i:0);
       if (Math.abs(gx)>MAX || Math.abs(gy)>MAX) return false;
@@ -787,10 +787,8 @@ function buildCrossword(rawWords, PAD=2, MAX=40){
     if (snap.has(key(ex1x,ex1y)) || snap.has(key(ex2x,ex2y))) return false;
     return true;
   }
-  function placeSnap(word,x,y,dir,snap){ for(let i=0;i<word.length;i++){ const gx=x+(dir==='across'?i:0), gy=y+(dir==='down'?i:0); const k=key(gx,gy); if (!snap.has(k)) snap.set(k,word[i]); } }
+  function placeSnap(word,x,y,dir,snap){ for (let i=0;i<word.length;i++){ const gx=x+(dir==='across'?i:0), gy=y+(dir==='down'?i:0); const k=key(gx,gy); if (!snap.has(k)) snap.set(k,word[i]); } }
   function tryColorBridge(word,index){
-    const COLOR_WORDS = ["PURPLE","GREEN","BLUE","RED","ORANGE","YELLOW","PINK","BLACK","WHITE","BROWN","GREY"];
-    if (!window.usedColors) window.usedColors = new Set();
     for (const color of COLOR_WORDS){
       if (usedColors.has(color)) continue;
       const snap=new Map(grid); let colorPlaced=false, colorPos=null;
@@ -825,12 +823,14 @@ function buildCrossword(rawWords, PAD=2, MAX=40){
     return false;
   }
 
-  place(words[0],0,0,'across',0);
+  // seed first word
+  if (words.length) place(words[0],0,0,'across',0);
   let nextRow=2, nextCol=-2;
   for (let wi=1; wi<words.length; wi++){
     const w=words[wi];
     if (tryOverlap(w,wi)) continue;
     if (tryColorBridge(w,wi)) continue;
+    // fallback rows/cols
     if (wi%2===0){
       let y=nextRow, scans=0;
       rowSearch: while (scans<200){ for(let x=-40;x<=40;x++){ if (grid.has(x+','+y)){ y+=2; scans++; continue rowSearch; } } break; }
@@ -848,7 +848,7 @@ function buildCrossword(rawWords, PAD=2, MAX=40){
   return {grid,placed,bounds:{minX,maxX,minY,maxY},words};
 }
 
-function cwUpdateProgress(){ cw.progress.textContent=`Completed: ${document.querySelectorAll('.wordItem.done').length} / ${document.querySelectorAll('.wordItem').length}`; }
+function cwUpdateProgress(){ cw.progress.textContent=`Completed: ${document.querySelectorAll('#cw .wordItem.done').length} / ${document.querySelectorAll('#cw .wordItem').length}`; }
 function cwBuildChecklist(words){
   cw.listUI.innerHTML=''; wordListItems.clear();
   words.forEach((w,wi)=>{
@@ -863,7 +863,7 @@ function cwMarkDone(wi){
   if (el && !el.classList.contains('done')){
     el.classList.add('done'); el.querySelector('.mark').textContent='✓';
     cwUpdateProgress();
-    if (document.querySelectorAll('.wordItem.done').length === document.querySelectorAll('.wordItem').length){
+    if (document.querySelectorAll('#cw .wordItem.done').length === document.querySelectorAll('#cw .wordItem').length){
       cw.feedback.innerHTML='';
       const span=document.createElement('div'); span.className='inlineTiles';
       renderTiles(span, 'WELL  DONE', 'chipTile');
@@ -905,8 +905,9 @@ function cwBuildBoard(CW, cluePercent){
           cell.addEventListener('dragleave', ()=> cell.classList.remove('drop-ok'));
           cell.addEventListener('drop', e=> cwOnDrop(e, cell));
           cell.addEventListener('click', ()=>{
-            if (window.cwSelected){ cwPlaceTileIntoCell(window.cwSelected, cell); window.cwSelected.classList.remove('dragging'); window.cwSelected=null; }
-            else if (cell.firstElementChild && cell.firstElementChild.classList.contains('tile')) {
+            const t = cw.board.querySelector('.tile.dragging');
+            if (t) { cwPlaceTileIntoCell(t, cell); t.classList.remove('dragging'); }
+            else if (cell.firstElementChild && cell.firstElementChild.classList.contains('tile')){
               cw.pool.appendChild(cell.firstElementChild); cell.dataset.filled=''; cwOnGridChange();
             }
           });
@@ -917,11 +918,10 @@ function cwBuildBoard(CW, cluePercent){
     }
   }
 
-  // colorful pool tiles
+  // pool tiles
   const letters=[]; for (const c of allCells) if (!c.given) letters.push(c.target);
   letters.sort(()=>Math.random()-.5);
-  const totalLetters = letters.length;
-  letters.forEach((ch,i)=> cw.pool.appendChild(cwMakeTile(ch,i,totalLetters)));
+  letters.forEach((ch,i)=> cw.pool.appendChild(cwMakeTile(ch,i,letters.length)));
 
   // map nodes per word index
   wordNodesByIndex.clear();
@@ -947,14 +947,10 @@ function cwOnDrop(e,cell){
 function cwPlaceTileIntoCell(tile, cell){
   if (!cell.classList.contains('slot')) return;
   const want=cell.dataset.letter, got=tile.dataset.letter;
-  if (cell.lastElementChild && cell.lastElementChild.classList.contains('tile')) {
-    cw.pool.appendChild(cell.lastElementChild);
-  }
+  if (cell.lastElementChild && cell.lastElementChild.classList.contains('tile')) cw.pool.appendChild(cell.lastElementChild);
   cell.appendChild(tile);
-  if (got===want){
-    cell.dataset.filled='1';
-    cwOnGridChange();
-  } else {
+  if (got===want){ cell.dataset.filled='1'; cwOnGridChange(); }
+  else {
     cell.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(0)'}],{duration:220});
     setTimeout(()=> cw.pool.appendChild(tile), 140);
   }
@@ -970,114 +966,314 @@ function cwMakeTile(ch,i,total){
   t.setAttribute('draggable','true');
   t.dataset.letter=ch;
   t.addEventListener('dragstart', e=>{
+    enableNoSelect();
     t.classList.add('dragging');
     try{ e.dataTransfer.setData('text/plain', ch); }catch(_){}
     e.dataTransfer.effectAllowed='move';
   });
-  t.addEventListener('dragend', ()=> t.classList.remove('dragging'));
+  t.addEventListener('dragend', ()=> { t.classList.remove('dragging'); disableNoSelect(); });
   t.addEventListener('click', ()=>{
-    if (window.cwSelected===t){ t.classList.remove('dragging'); window.cwSelected=null; return; }
-    if (window.cwSelected) window.cwSelected.classList.remove('dragging');
-    window.cwSelected=t; t.classList.add('dragging');
+    const curr = cw.board.querySelector('.tile.dragging') || cw.pool.querySelector('.tile.dragging');
+    if (curr && curr!==t){ curr.classList.remove('dragging'); }
+    t.classList.toggle('dragging');
   });
+  // touch drag
   t.addEventListener('pointerdown', e=>{
     if (e.pointerType==='mouse') return;
-    e.preventDefault();
+    e.preventDefault(); enableNoSelect();
     cwStartTouchDrag(t, e);
   });
   return t;
 }
-
-/* touch-drag for crossword */
 let cwDrag=null;
 function cwStartTouchDrag(tile,e){
   const rect=tile.getBoundingClientRect();
   const ghost=tile.cloneNode(true);
-  ghost.style.position='fixed';
-  ghost.style.zIndex='9999';
-  ghost.style.pointerEvents='none';
-  ghost.style.width=rect.width+'px';
-  ghost.style.height=rect.height+'px';
-  ghost.classList.add('dragging');
+  ghost.className='tile dragging drag-ghost';
+  ghost.style.left=rect.left+'px'; ghost.style.top=rect.top+'px';
   document.body.appendChild(ghost);
-
   cwDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY:e.clientY-rect.top, lastTarget:null};
-  function move(ev){
-    ev.preventDefault();
-    ghost.style.left=(ev.clientX-cwDrag.offsetX)+'px';
-    ghost.style.top=(ev.clientY-cwDrag.offsetY)+'px';
-    cwHighlight(ev.clientX,ev.clientY);
-  }
-  function up(ev){ ev.preventDefault(); cwDropTouch(ev.clientX,ev.clientY); cleanup(); }
-  function cancel(){ cwCancelTouch(); cleanup(); }
-  function cleanup(){
-    document.removeEventListener('pointermove', move, {passive:false});
-    document.removeEventListener('pointerup', up, {passive:false});
-    document.removeEventListener('pointercancel', cancel);
-  }
+  function move(ev){ ev.preventDefault(); ghost.style.left=(ev.clientX-cwDrag.offsetX)+'px'; ghost.style.top=(ev.clientY-cwDrag.offsetY)+'px'; cwHighlight(ev.clientX,ev.clientY); }
+  function up(ev){ ev.preventDefault(); cwDropTouch(ev.clientX,ev.clientY); cleanup(); disableNoSelect(); }
+  function cancel(){ cwCancelTouch(); cleanup(); disableNoSelect(); }
+  function cleanup(){ document.removeEventListener('pointermove', move, {passive:false}); document.removeEventListener('pointerup', up, {passive:false}); document.removeEventListener('pointercancel', cancel); }
   document.addEventListener('pointermove', move, {passive:false});
   document.addEventListener('pointerup', up, {passive:false});
   document.addEventListener('pointercancel', cancel);
 }
-function cwFindSlotAt(x,y){
-  let el=document.elementFromPoint(x,y);
-  while (el && !el.classList?.contains('slot') && el !== cw.pool && el !== document.body) el=el.parentElement;
-  return el && el.classList?.contains('slot') ? el : null;
-}
-function cwHighlight(x,y){
-  const t=cwFindSlotAt(x,y);
-  if (cwDrag?.lastTarget?.classList) cwDrag.lastTarget.classList.remove('drop-ok');
-  if (t) t.classList.add('drop-ok');
-  cwDrag.lastTarget=t;
-}
-function cwDropTouch(x,y){
-  if (!cwDrag) return;
-  const cell=cwFindSlotAt(x,y);
-  cwDrag.ghost.remove();
-  if (cell) cwPlaceTileIntoCell(cwDrag.node, cell);
-  cwDrag=null;
-}
+function cwFindSlotAt(x,y){ let el=document.elementFromPoint(x,y); while (el && !el.classList?.contains('slot') && el !== cw.pool && el !== document.body) el=el.parentElement; return el && el.classList?.contains('slot') ? el : null; }
+function cwHighlight(x,y){ const t=cwFindSlotAt(x,y); if (cwDrag?.lastTarget?.classList) cwDrag.lastTarget.classList.remove('drop-ok'); if (t) t.classList.add('drop-ok'); cwDrag.lastTarget=t; }
+function cwDropTouch(x,y){ if (!cwDrag) return; const cell=cwFindSlotAt(x,y); cwDrag.ghost.remove(); if (cell) cwPlaceTileIntoCell(cwDrag.node, cell); cwDrag=null; }
 function cwCancelTouch(){ if (!cwDrag) return; cwDrag.ghost.remove(); cwDrag=null; }
 
-/* Buttons / labels */
 document.getElementById('cw-reshuffleBtn').addEventListener('click', ()=>{
   const left=Array.from(cw.pool.children);
   left.sort(()=>Math.random()-.5).forEach(n=>cw.pool.appendChild(n));
 });
 renderTiles(document.getElementById('cw-wordlist-title'), 'WORD LIST', 'chipTile');
-
-document.getElementById('cw-backToSetup').addEventListener('click', ()=>{
-  document.getElementById('cw').style.display='none';
-  document.getElementById('setup').style.display='';
-  setSectionLabel('Setup');
-});
-
-/* Build crossword from setup */
+document.getElementById('cw-backToSetup').addEventListener('click', ()=> showOnly('setup') );
 buildCrosswordBtn.addEventListener('click', ()=>{
   const words = parseWords(inputWords.value);
   if (!words.length){ alert('Please enter at least one word.'); return; }
-  const cap = parseInt(crossCap.value,10) || 12;
-  const chosen = pickCap(words, cap); // random
-  startCrosswordFlow(chosen);
+  const cap = parseInt(capInput.value,10) || 12;
+  startCrosswordFlow(pickCap(words, cap));
 });
-
-/* Start crossword flow */
 function startCrosswordFlow(words){
-  window.usedColors = new Set();
+  usedColors = new Set();
   const clue = parseInt(cluePct.value,10) || 30;
   const CW = buildCrossword(words);
-  document.getElementById('setup').style.display='none';
-  document.getElementById('st').style.display='none';
-  document.getElementById('cw').style.display='';
-  setSectionLabel('Crossword'); // section chip (uiLabel size)
-  document.getElementById('cw-progress').textContent = `Completed: 0 / ${CW.words.length}`;
+  showOnly('cw');
+  cw.progress.textContent = `Completed: 0 / ${CW.words.length}`;
   cwBuildBoard(CW, clue);
   cwBuildChecklist(CW.words);
 }
 
+/* -------------------- WORD SEARCH -------------------- */
+const ws = {
+  root: document.getElementById('ws'),
+  grid: document.getElementById('ws-grid'),
+  feedback: document.getElementById('ws-feedback'),
+  progress: document.getElementById('ws-progress'),
+  listUI: document.getElementById('ws-listUI'),
+  backBtn: document.getElementById('ws-backToSetup'),
+  reshuffleBtn: document.getElementById('ws-reshuffleBtn'),
+  wordTitle: document.getElementById('ws-wordlist-title'),
+};
+renderTiles(ws.wordTitle, 'WORD LIST', 'chipTile');
+
+let wsState=null; // {size, grid, wordsPlaced, found:Set}
+
+buildWordSearchBtn.addEventListener('click', ()=>{
+  const words = parseWords(inputWords.value);
+  if (!words.length){ alert('Please enter at least one word.'); return; }
+  const cap = parseInt(capInput.value,10) || 12;
+  startWordSearchFlow(pickCap(words, cap));
+});
+ws.backBtn.addEventListener('click', ()=> showOnly('setup') );
+ws.reshuffleBtn.addEventListener('click', ()=>{
+  if (!wsState) return;
+  startWordSearchFlow(wsState.wordsPlaced.map(w=>w.word)); // rebuild quickly with same set
+});
+
+function startWordSearchFlow(words){
+  const maxSize = Math.max(8, Math.min(16, parseInt(wsMaxEl.value,10) || 16)); // clamp 8..16
+  const allowDiag = !!wsDiagEl.checked;
+  const allowBack = !!wsBackEl.checked;
+  wsState = buildWordSearch(words, maxSize, {allowDiag, allowBack});
+  showOnly('ws');
+  wsRender(wsState);
+}
+
+/* Build a word search that attempts to place as many words as possible
+   inside a square up to maxSize. Starts at size = max(longestWord, 6),
+   grows up to maxSize if needed; excludes words that can't be placed. */
+function buildWordSearch(rawWords, maxSize, opts){
+  const words = rawWords.map(w=>w.toUpperCase());
+  const longest = Math.max(6, ...words.map(w=>w.length));
+  const rnd = (n)=> Math.floor(Math.random()*n);
+  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  const dirBase = [[1,0],[0,1]]; // right, down
+  const dirs = dirBase.slice();
+  if (opts.allowBack){ dirs.push([-1,0],[0,-1]); }
+  if (opts.allowDiag){
+    dirs.push([1,1],[-1,1],[1,-1],[-1,-1]);
+    if (opts.allowBack) {
+      // backs are included via negatives already
+    }
+  }
+
+  function attempt(size){
+    const grid = Array.from({length:size}, ()=> Array.from({length:size}, ()=> null));
+    const inside=(r,c)=> r>=0 && r<size && c>=0 && c<size;
+
+    // place words, longest-first
+    const order = words.slice().sort((a,b)=>b.length-a.length);
+    const placed=[];
+    function tryPlace(word){
+      const attempts = size*size*10;
+      for (let t=0;t<attempts;t++){
+        const dir = dirs[rnd(dirs.length)];
+        const len = word.length;
+        let r = rnd(size), c = rnd(size);
+        // adjust start so it fits
+        if (dir[0]===1) c = rnd(size-len+1);
+        if (dir[0]===-1) c = rnd(size-len+1)+(len-1);
+        if (dir[1]===1) r = rnd(size-len+1);
+        if (dir[1]===-1) r = rnd(size-len+1)+(len-1);
+
+        let ok=true;
+        for (let i=0;i<len;i++){
+          const rr=r+i*dir[1], cc=c+i*dir[0];
+          if (!inside(rr,cc)) { ok=false; break; }
+          const ch = grid[rr][cc];
+          if (ch && ch!==word[i]) { ok=false; break; }
+        }
+        if (!ok) continue;
+        for (let i=0;i<len;i++){
+          const rr=r+i*dir[1], cc=c+i*dir[0];
+          grid[rr][cc]=word[i];
+        }
+        placed.push({word, r, c, dir, len});
+        return true;
+      }
+      return false;
+    }
+
+    for (const w of order) tryPlace(w);
+
+    // fill blanks
+    for (let r=0;r<size;r++) for (let c=0;c<size;c++) if (!grid[r][c]) grid[r][c]=A[rnd(A.length)];
+
+    // Only words we placed successfully
+    const wordsPlaced = placed.map(p=>({word:p.word, r:p.r, c:p.c, dir:p.dir, len:p.len}));
+    return { size, grid, wordsPlaced };
+  }
+
+  let size = Math.max(longest, 6);
+  size = Math.min(size, maxSize); // don't exceed max to start
+  // Try from current size up to maxSize; pick the version that places the most words
+  let best = {size:0, grid:[], wordsPlaced:[]};
+  for (let s=size; s<=maxSize; s++){
+    const cand = attempt(s);
+    if (cand.wordsPlaced.length > best.wordsPlaced.length) best = cand;
+    if (cand.wordsPlaced.length === words.length){ best=cand; break; }
+  }
+  // If we never managed to place any, still return last attempt (it will be full of random letters)
+  const foundSet = new Set();
+  return { size: best.size || size, grid: best.grid, wordsPlaced: best.wordsPlaced, found: foundSet };
+}
+
+function wsRender(state){
+  // word list shows only placed words
+  ws.listUI.innerHTML='';
+  const words = state.wordsPlaced.map(w=>w.word);
+  const unique = Array.from(new Set(words));
+  const items=new Map();
+  unique.forEach(w=>{
+    const it=document.createElement('div'); it.className='wordItem'; it.innerHTML=`<div class="mark">•</div><div class="txt">${w}</div>`;
+    ws.listUI.appendChild(it); items.set(w,it);
+  });
+
+  // grid
+  ws.grid.innerHTML='';
+  ws.grid.style.gridTemplateColumns = `repeat(${state.size}, auto)`;
+  const cellRefs = Array.from({length:state.size}, ()=> Array.from({length:state.size}, ()=> null));
+  for (let r=0;r<state.size;r++){
+    for (let c=0;c<state.size;c++){
+      const d=document.createElement('div');
+      d.className='gcell';
+      d.textContent=state.grid[r][c];
+      d.dataset.r=r; d.dataset.c=c;
+      ws.grid.appendChild(d);
+      cellRefs[r][c]=d;
+    }
+  }
+
+  // build a quick lookup of all valid word paths
+  const pathKey=(cells)=> cells.map(c=>c.r+','+c.c).join('|');
+  const validPaths = new Map(); // key -> {word, cells}
+  for (const p of state.wordsPlaced){
+    const cells=[];
+    for (let i=0;i<p.len;i++){
+      const rr=p.r + i*p.dir[1], cc=p.c + i*p.dir[0];
+      cells.push({r:rr,c:cc});
+    }
+    validPaths.set(pathKey(cells), {word:p.word, cells});
+    // also accept reverse if backwards allowed
+    if (wsBackEl.checked){
+      const rcells=cells.slice().reverse();
+      validPaths.set(pathKey(rcells), {word:p.word, cells:rcells});
+    }
+  }
+
+  // selection via pointer drag across straight lines
+  let dragging=false, path=[];
+  function getCell(el){ return (el && el.classList && el.classList.contains('gcell')) ? el : null; }
+  function norm(x){ return x===0?0:(x>0?1:-1); }
+
+  function beginAt(el){
+    dragging=true; enableNoSelect();
+    path=[el]; el.classList.add('sel');
+  }
+  function extendTo(el){
+    if (!dragging) return;
+    const first = path[0], last = path[path.length-1];
+    const fr=parseInt(first.dataset.r,10), fc=parseInt(first.dataset.c,10);
+    const lr=parseInt(last.dataset.r,10),  lc=parseInt(last.dataset.c,10);
+    const tr=parseInt(el.dataset.r,10),    tc=parseInt(el.dataset.c,10);
+    // direction from first to current target
+    const dr = norm(tr-fr), dc = norm(tc-fc);
+    if (dr===0 && dc===0) return;
+    // enforce contiguous step from last
+    if (tr === lr + dr && tc === lc + dc){
+      // prevent duplicates
+      if (path[path.length-1] !== el){
+        path.push(el); el.classList.add('sel');
+      }
+    }
+  }
+  function endSelection(){
+    if (!dragging) return;
+    dragging=false; disableNoSelect();
+    // build path indices -> check if matches a valid path
+    const cells = path.map(el=>({r:parseInt(el.dataset.r,10), c:parseInt(el.dataset.c,10)}));
+    const k = pathKey(cells);
+    const hit = validPaths.get(k);
+    if (hit){
+      // mark cells + word list item
+      for (const el of path) { el.classList.remove('sel'); el.classList.add('found'); }
+      state.found.add(hit.word);
+      const item = Array.from(ws.listUI.children).find(x=>x.querySelector('.txt').textContent===hit.word);
+      if (item && !item.classList.contains('done')){
+        item.classList.add('done'); item.querySelector('.mark').textContent='✓';
+      }
+      wsUpdateProgress();
+      if (state.found.size===unique.length){
+        ws.feedback.innerHTML='';
+        const span=document.createElement('div'); span.className='inlineTiles';
+        renderTiles(span, 'WELL  DONE', 'chipTile');
+        ws.feedback.appendChild(span);
+      }
+    } else {
+      for (const el of path){ el.classList.remove('sel'); }
+    }
+    path=[];
+  }
+  function wsUpdateProgress(){
+    ws.progress.textContent = `Found: ${state.found.size} / ${unique.length}`;
+  }
+  wsUpdateProgress();
+
+  // pointer handlers
+  ws.grid.addEventListener('pointerdown', (e)=>{
+    const el=getCell(e.target); if (!el) return;
+    e.preventDefault();
+    ws.grid.setPointerCapture(e.pointerId);
+    beginAt(el);
+  });
+  ws.grid.addEventListener('pointermove', (e)=>{
+    if (!dragging) return;
+    const el=getCell(document.elementFromPoint(e.clientX, e.clientY)); if (!el) return;
+    extendTo(el);
+  });
+  ws.grid.addEventListener('pointerup', (e)=>{ endSelection(); try{ ws.grid.releasePointerCapture(e.pointerId);}catch(_){ } });
+  ws.grid.addEventListener('pointercancel', ()=> endSelection() );
+}
+
+/* -------------------- VIEW SWITCH -------------------- */
+function showOnly(id){
+  document.getElementById('setup').classList.toggle('hidden', id!=='setup');
+  document.getElementById('st').classList.toggle('hidden', id!=='st');
+  document.getElementById('cw').classList.toggle('hidden', id!=='cw');
+  document.getElementById('ws').classList.toggle('hidden', id!=='ws');
+  const label = id==='setup'?'Setup': id==='st'?'Spelling Test' : id==='cw'?'Crossword' : 'Word Search';
+  setSectionLabel(label);
+}
+
 /* boot */
 setSectionLabel('Setup');
-setButtonTileLabel(themeBtn, 'Theme', 'chipTile'); // Theme in tiles
+setButtonTileLabel(themeBtn, 'Theme', 'chipTile');
 renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
 </script>
 </body>
