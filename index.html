@@ -39,6 +39,14 @@
   /* disable text selection globally while dragging */
   .no-select, .no-select *{ user-select:none !important; -webkit-user-select:none !important; }
 
+  /* lowercase visual toggle */
+  body.lowercase .tile,
+  body.lowercase .cell,
+  body.lowercase .gcell,
+  body.lowercase .wordItem .txt,
+  body.lowercase #heroTitle .tile,
+  body.lowercase #sectionChip .tile { text-transform: lowercase; }
+
   /* hero title */
   .titleHero{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
 
@@ -111,13 +119,25 @@
   .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; }
 
   /* Spelling Test */
-  #st{ --st-size: 64px; --st-min: 22px; --st-max: 72px; }
+  #st{
+    --st-size: 64px;
+    --st-min: 44px;   /* larger minimum for touch */
+    --st-max: 72px;
+  }
   .slots, .pool{ display:flex; gap:min(12px,2.8vw); min-height:80px; justify-content:center; }
-  .slots{ flex-wrap:nowrap; overflow-x:auto; }
+  .slots{
+    flex-wrap: nowrap;
+    overflow-x: auto;               /* scroll long words horizontally */
+    overscroll-behavior-x: contain; /* avoid page rubber-band on iOS */
+    -webkit-overflow-scrolling: touch;
+  }
   .slot{
     width: var(--st-size); height: var(--st-size);
     border:3px dashed #ffffffbb; background:#ffffff22; border-radius:18px; display:flex; align-items:center; justify-content:center;
-    font-size: calc(var(--st-size)*0.6); transition: transform .12s ease, background .2s ease, border-color .2s ease; }
+    font-size: calc(var(--st-size)*0.6); transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    touch-action: pan-x pan-y; /* keep scrolling responsive */
+    padding:2px;
+  }
   .slot.drop-ok{ border-color:#22d3ee; background:#ffffff55; transform:scale(1.05); }
   .slot.filled{ border-style:solid; border-color:#ffffff; background:#ffffffbb; }
   #st .slots .tile, #st .pool .tile{ width:var(--st-size); height:var(--st-size); font-size:calc(var(--st-size)*0.6); border-radius:18px; }
@@ -170,6 +190,7 @@
         <div class="controls" style="margin:0">
           <span class="pill brand" id="themePill"><span id="themeName">Candy</span></span>
           <button id="themeBtn" aria-label="Theme"></button>
+          <button id="caseBtn" aria-label="Toggle case"></button>
         </div>
       </div>
 
@@ -416,6 +437,15 @@ themeBtn.addEventListener('click', ()=>{ themeIndex=(themeIndex+1)%themes.length
 applyTheme(themes[themeIndex]);
 setButtonTileLabel(themeBtn, 'Theme', 'chipTile');
 
+// Case toggle (visual only)
+const caseBtn = document.getElementById('caseBtn');
+setButtonTileLabel(caseBtn, 'Aa', 'chipTile');
+caseBtn.addEventListener('click', ()=>{
+  document.body.classList.toggle('lowercase');
+  const lower = document.body.classList.contains('lowercase');
+  setButtonTileLabel(caseBtn, lower ? 'aa' : 'AA', 'chipTile');
+});
+
 /* -------------------- Section label + hero -------------------- */
 renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
 const sectionChip = document.getElementById('sectionChip');
@@ -500,6 +530,7 @@ function stMakeTile(obj){
   t.style.background = `linear-gradient(180deg, hsla(${h}, 90%, 85%, .95), hsla(${h}, 95%, 75%, .95))`;
   t.style.borderColor = `hsla(${h}, 95%, 92%, .9)`;
 
+  // MOUSE drag
   t.addEventListener('dragstart', e=>{
     enableNoSelect();
     t.classList.add('dragging'); stCurrentDragTile = t;
@@ -509,35 +540,101 @@ function stMakeTile(obj){
   });
   t.addEventListener('dragend', ()=>{ t.classList.remove('dragging'); stCurrentDragTile=null; disableNoSelect(); });
 
+  // MOUSE click-to-select (ignore if last pointer was touch)
   t.addEventListener('click', ()=>{
+    if (window.__lastPointerWasTouch) return;
     if(stPreviewing) return;
     if(stSelected===t){ t.classList.remove('dragging'); stSelected=null; return; }
     if(stSelected) stSelected.classList.remove('dragging');
     stSelected=t; t.classList.add('dragging');
   });
 
+  // TOUCH drag with slop (no swap on simple tap)
   t.addEventListener('pointerdown', e=>{
-    if (e.pointerType==='mouse') return;
+    if (e.pointerType!=='touch') return;
     if (stPreviewing) return;
-    e.preventDefault(); enableNoSelect();
-    stStartTouchDrag(t, e);
+    e.preventDefault();
+    window.__lastPointerWasTouch = true;
+    setTimeout(()=>{ window.__lastPointerWasTouch = false; }, 300);
+    stStartTouchDrag(t, e);  // slop-aware
   });
+
   return t;
 }
-let stDrag=null;
+
+/* ---- Touch drag with movement threshold (no immediate DOM swaps) ---- */
+let stDrag = null;
+const ST_DRAG_SLOP = 8; // pixels
+
 function stStartTouchDrag(tile, e){
+  enableNoSelect();
   const rect = tile.getBoundingClientRect();
   const ghost = tile.cloneNode(true);
   ghost.classList.add('drag-ghost','dragging');
-  ghost.style.width=rect.width+'px'; ghost.style.height=rect.height+'px';
-  ghost.style.left=rect.left+'px'; ghost.style.top=rect.top+'px';
+  ghost.style.width=rect.width+'px';
+  ghost.style.height=rect.height+'px';
+  ghost.style.left=rect.left+'px';
+  ghost.style.top=rect.top+'px';
   document.body.appendChild(ghost);
-  st.pool.appendChild(tile);
-  stDrag={node:tile, ghost, offsetX:e.clientX-rect.left, offsetY:e.clientY-rect.top, lastTarget:null};
-  function move(ev){ ev.preventDefault(); stUpdateGhost(ev.clientX,ev.clientY); stHighlightDrop(ev.clientX,ev.clientY); }
-  function up(ev){ ev.preventDefault(); stFinishTouch(ev.clientX,ev.clientY); cleanup(); disableNoSelect(); }
-  function cancel(){ stCancelTouch(); cleanup(); disableNoSelect(); }
-  function cleanup(){ document.removeEventListener('pointermove', move, {passive:false}); document.removeEventListener('pointerup', up, {passive:false}); document.removeEventListener('pointercancel', cancel); }
+
+  stDrag = {
+    node: tile,
+    ghost,
+    startX: e.clientX,
+    startY: e.clientY,
+    offsetX: e.clientX - rect.left,
+    offsetY: e.clientY - rect.top,
+    started: false,
+    lastTarget: null
+  };
+
+  function move(ev){
+    ev.preventDefault();
+    stUpdateGhost(ev.clientX, ev.clientY);
+    const dx = Math.abs(ev.clientX - stDrag.startX);
+    const dy = Math.abs(ev.clientY - stDrag.startY);
+    if (!stDrag.started && (dx > ST_DRAG_SLOP || dy > ST_DRAG_SLOP)){
+      stDrag.started = true;
+      stDrag.node.style.visibility = 'hidden'; // keep layout stable
+    }
+    if (stDrag.started){
+      stHighlightDrop(ev.clientX, ev.clientY);
+    }
+  }
+  function up(ev){
+    ev.preventDefault();
+    if (!stDrag) return;
+    if (!stDrag.started){
+      // TAP: toggle selection only
+      stDrag.ghost.remove();
+      stDrag.node.style.visibility = '';
+      if(stSelected===stDrag.node){ stDrag.node.classList.remove('dragging'); stSelected=null; }
+      else { if(stSelected) stSelected.classList.remove('dragging'); stSelected = stDrag.node; stDrag.node.classList.add('dragging'); }
+      cleanup(); disableNoSelect(); return;
+    }
+    // Real drag
+    const target = stFindDropContainerAt(ev.clientX, ev.clientY);
+    if (stDrag.lastTarget && stDrag.lastTarget.classList) stDrag.lastTarget.classList.remove('drop-ok');
+    stDrag.ghost.remove();
+    stFinishTouchDragTo(target || st.pool);
+    stDrag.node.style.visibility = '';
+    stMarkFilled();
+    stCheckSolved(stWords[stIndex]);
+    cleanup(); disableNoSelect();
+  }
+  function cancel(){
+    if (!stDrag) return;
+    stDrag.ghost.remove();
+    stDrag.node.style.visibility = '';
+    cleanup(); disableNoSelect();
+  }
+  function cleanup(){
+    document.removeEventListener('pointermove', move, {passive:false});
+    document.removeEventListener('pointerup', up, {passive:false});
+    document.removeEventListener('pointercancel', cancel);
+    stDrag = null;
+  }
+
   document.addEventListener('pointermove', move, {passive:false});
   document.addEventListener('pointerup', up, {passive:false});
   document.addEventListener('pointercancel', cancel);
@@ -557,33 +654,32 @@ function stHighlightDrop(x,y){
   stDrag.lastTarget=target;
 }
 function stFinishTouchDragTo(target){
+  if (!stDrag) return;
+  const tile = stDrag.node;
   if (stIsSlot(target)) {
     if (target.firstElementChild) st.pool.appendChild(target.firstElementChild);
-    target.appendChild(stDrag.node);
-  } else { st.pool.appendChild(stDrag.node); }
+    target.appendChild(tile);
+  } else {
+    st.pool.appendChild(tile);
+  }
 }
-function stFinishTouch(x,y){
-  if(!stDrag) return;
-  const target = stFindDropContainerAt(x,y);
-  if (stDrag.lastTarget && stDrag.lastTarget.classList) stDrag.lastTarget.classList.remove('drop-ok');
-  stDrag.ghost.remove();
-  stFinishTouchDragTo(target||st.pool);
-  stMarkFilled();
-  const word = stWords[stIndex]; stCheckSolved(word);
-  stDrag=null;
-}
-function stCancelTouch(){ if(!stDrag) return; stDrag.ghost.remove(); st.pool.appendChild(stDrag.node); stDrag=null; }
+
 function stFitTileSizeForWord(n){
   const container = st.slots;
   const styles = getComputedStyle(container);
   const gap = parseFloat(styles.columnGap || styles.gap || '12') || 12;
   const W = Math.max(container.clientWidth, 0);
   if (!W || n<=0){ container.style.removeProperty('--st-size'); return; }
-  const minSize = parseFloat(getComputedStyle(document.getElementById('st')).getPropertyValue('--st-min')) || 22;
-  const maxSize = parseFloat(getComputedStyle(document.getElementById('st')).getPropertyValue('--st-max')) || 72;
-  const size = Math.max(minSize, Math.min(maxSize, Math.floor((W - gap*(n-1)) / n)));
+
+  const rootStyles = getComputedStyle(document.getElementById('st'));
+  const minSize = parseFloat(rootStyles.getPropertyValue('--st-min')) || 44;
+  const maxSize = parseFloat(rootStyles.getPropertyValue('--st-max')) || 72;
+
+  const perfect = Math.floor((W - gap*(n-1)) / n);
+  const size = perfect < minSize ? minSize : Math.min(maxSize, perfect);
   container.style.setProperty('--st-size', size + 'px');
 }
+
 function stBuildWord(word){
   stClearStage();
 
@@ -595,12 +691,11 @@ function stBuildWord(word){
     slot.addEventListener('drop', e=> stOnDrop(e, slot));
     slot.addEventListener('click', ()=>{
       if (stPreviewing) return;
-      if (!stSelected){
-        if (slot.firstElementChild){ st.pool.appendChild(slot.firstElementChild); stMarkFilled(); stCheckSolved(word); }
-        return;
-      }
+      // Only act if a tile is selected (prevents unexpected swaps on touch)
+      if (!stSelected) return;
       if (slot.firstElementChild) st.pool.appendChild(slot.firstElementChild);
-      slot.appendChild(stSelected); stSelected.classList.remove('dragging'); stSelected=null; stMarkFilled(); stCheckSolved(word);
+      slot.appendChild(stSelected); stSelected.classList.remove('dragging'); stSelected=null;
+      stMarkFilled(); stCheckSolved(word);
     });
     st.slots.appendChild(slot);
   });
@@ -823,14 +918,12 @@ function buildCrossword(rawWords, MAX=40){
     return false;
   }
 
-  // seed first word
   if (words.length) place(words[0],0,0,'across',0);
   let nextRow=2, nextCol=-2;
   for (let wi=1; wi<words.length; wi++){
     const w=words[wi];
     if (tryOverlap(w,wi)) continue;
     if (tryColorBridge(w,wi)) continue;
-    // fallback rows/cols
     if (wi%2===0){
       let y=nextRow, scans=0;
       rowSearch: while (scans<200){ for(let x=-40;x<=40;x++){ if (grid.has(x+','+y)){ y+=2; scans++; continue rowSearch; } } break; }
@@ -918,12 +1011,10 @@ function cwBuildBoard(CW, cluePercent){
     }
   }
 
-  // pool tiles
   const letters=[]; for (const c of allCells) if (!c.given) letters.push(c.target);
   letters.sort(()=>Math.random()-.5);
   letters.forEach((ch,i)=> cw.pool.appendChild(cwMakeTile(ch,i,letters.length)));
 
-  // map nodes per word index
   wordNodesByIndex.clear();
   for (const p of CW.placed){
     if (p.index<0) continue;
@@ -1052,7 +1143,7 @@ buildWordSearchBtn.addEventListener('click', ()=>{
 ws.backBtn.addEventListener('click', ()=> showOnly('setup') );
 ws.reshuffleBtn.addEventListener('click', ()=>{
   if (!wsState) return;
-  startWordSearchFlow(wsState.wordsPlaced.map(w=>w.word)); // rebuild quickly with same set
+  startWordSearchFlow(wsState.wordsPlaced.map(w=>w.word));
 });
 
 function startWordSearchFlow(words){
@@ -1064,30 +1155,22 @@ function startWordSearchFlow(words){
   wsRender(wsState);
 }
 
-/* Build a word search that attempts to place as many words as possible
-   inside a square up to maxSize. Starts at size = max(longestWord, 6),
-   grows up to maxSize if needed; excludes words that can't be placed. */
+/* Build Word Search grid up to maxSize, excluding unfittable words */
 function buildWordSearch(rawWords, maxSize, opts){
   const words = rawWords.map(w=>w.toUpperCase());
   const longest = Math.max(6, ...words.map(w=>w.length));
   const rnd = (n)=> Math.floor(Math.random()*n);
   const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-  const dirBase = [[1,0],[0,1]]; // right, down
+  const dirBase = [[1,0],[0,1]];
   const dirs = dirBase.slice();
   if (opts.allowBack){ dirs.push([-1,0],[0,-1]); }
-  if (opts.allowDiag){
-    dirs.push([1,1],[-1,1],[1,-1],[-1,-1]);
-    if (opts.allowBack) {
-      // backs are included via negatives already
-    }
-  }
+  if (opts.allowDiag){ dirs.push([1,1],[-1,1],[1,-1],[-1,-1]); }
 
   function attempt(size){
     const grid = Array.from({length:size}, ()=> Array.from({length:size}, ()=> null));
     const inside=(r,c)=> r>=0 && r<size && c>=0 && c<size;
 
-    // place words, longest-first
     const order = words.slice().sort((a,b)=>b.length-a.length);
     const placed=[];
     function tryPlace(word){
@@ -1096,7 +1179,6 @@ function buildWordSearch(rawWords, maxSize, opts){
         const dir = dirs[rnd(dirs.length)];
         const len = word.length;
         let r = rnd(size), c = rnd(size);
-        // adjust start so it fits
         if (dir[0]===1) c = rnd(size-len+1);
         if (dir[0]===-1) c = rnd(size-len+1)+(len-1);
         if (dir[1]===1) r = rnd(size-len+1);
@@ -1119,33 +1201,24 @@ function buildWordSearch(rawWords, maxSize, opts){
       }
       return false;
     }
-
     for (const w of order) tryPlace(w);
-
-    // fill blanks
     for (let r=0;r<size;r++) for (let c=0;c<size;c++) if (!grid[r][c]) grid[r][c]=A[rnd(A.length)];
-
-    // Only words we placed successfully
     const wordsPlaced = placed.map(p=>({word:p.word, r:p.r, c:p.c, dir:p.dir, len:p.len}));
     return { size, grid, wordsPlaced };
   }
 
-  let size = Math.max(longest, 6);
-  size = Math.min(size, maxSize); // don't exceed max to start
-  // Try from current size up to maxSize; pick the version that places the most words
+  let size = Math.min(Math.max(longest, 6), maxSize);
   let best = {size:0, grid:[], wordsPlaced:[]};
   for (let s=size; s<=maxSize; s++){
     const cand = attempt(s);
     if (cand.wordsPlaced.length > best.wordsPlaced.length) best = cand;
     if (cand.wordsPlaced.length === words.length){ best=cand; break; }
   }
-  // If we never managed to place any, still return last attempt (it will be full of random letters)
   const foundSet = new Set();
   return { size: best.size || size, grid: best.grid, wordsPlaced: best.wordsPlaced, found: foundSet };
 }
 
 function wsRender(state){
-  // word list shows only placed words
   ws.listUI.innerHTML='';
   const words = state.wordsPlaced.map(w=>w.word);
   const unique = Array.from(new Set(words));
@@ -1155,7 +1228,6 @@ function wsRender(state){
     ws.listUI.appendChild(it); items.set(w,it);
   });
 
-  // grid
   ws.grid.innerHTML='';
   ws.grid.style.gridTemplateColumns = `repeat(${state.size}, auto)`;
   const cellRefs = Array.from({length:state.size}, ()=> Array.from({length:state.size}, ()=> null));
@@ -1170,9 +1242,8 @@ function wsRender(state){
     }
   }
 
-  // build a quick lookup of all valid word paths
   const pathKey=(cells)=> cells.map(c=>c.r+','+c.c).join('|');
-  const validPaths = new Map(); // key -> {word, cells}
+  const validPaths = new Map();
   for (const p of state.wordsPlaced){
     const cells=[];
     for (let i=0;i<p.len;i++){
@@ -1180,14 +1251,12 @@ function wsRender(state){
       cells.push({r:rr,c:cc});
     }
     validPaths.set(pathKey(cells), {word:p.word, cells});
-    // also accept reverse if backwards allowed
     if (wsBackEl.checked){
       const rcells=cells.slice().reverse();
       validPaths.set(pathKey(rcells), {word:p.word, cells:rcells});
     }
   }
 
-  // selection via pointer drag across straight lines
   let dragging=false, path=[];
   function getCell(el){ return (el && el.classList && el.classList.contains('gcell')) ? el : null; }
   function norm(x){ return x===0?0:(x>0?1:-1); }
@@ -1202,12 +1271,9 @@ function wsRender(state){
     const fr=parseInt(first.dataset.r,10), fc=parseInt(first.dataset.c,10);
     const lr=parseInt(last.dataset.r,10),  lc=parseInt(last.dataset.c,10);
     const tr=parseInt(el.dataset.r,10),    tc=parseInt(el.dataset.c,10);
-    // direction from first to current target
     const dr = norm(tr-fr), dc = norm(tc-fc);
     if (dr===0 && dc===0) return;
-    // enforce contiguous step from last
     if (tr === lr + dr && tc === lc + dc){
-      // prevent duplicates
       if (path[path.length-1] !== el){
         path.push(el); el.classList.add('sel');
       }
@@ -1216,12 +1282,10 @@ function wsRender(state){
   function endSelection(){
     if (!dragging) return;
     dragging=false; disableNoSelect();
-    // build path indices -> check if matches a valid path
     const cells = path.map(el=>({r:parseInt(el.dataset.r,10), c:parseInt(el.dataset.c,10)}));
     const k = pathKey(cells);
     const hit = validPaths.get(k);
     if (hit){
-      // mark cells + word list item
       for (const el of path) { el.classList.remove('sel'); el.classList.add('found'); }
       state.found.add(hit.word);
       const item = Array.from(ws.listUI.children).find(x=>x.querySelector('.txt').textContent===hit.word);
@@ -1245,7 +1309,6 @@ function wsRender(state){
   }
   wsUpdateProgress();
 
-  // pointer handlers
   ws.grid.addEventListener('pointerdown', (e)=>{
     const el=getCell(e.target); if (!el) return;
     e.preventDefault();
