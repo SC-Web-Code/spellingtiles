@@ -118,34 +118,48 @@
   .tile.dragging{opacity:.92; transform:scale(1.08) rotate(1.2deg); box-shadow:0 16px 26px rgba(0,0,0,.28); filter:saturate(1.2)}
   .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; }
 
-  /* ---------------- Spelling Test sizing (progressive) ---------------- */
-  #st{
-    --st-base: 64px;     /* base when word length ≤ 6 */
-    --st-min:  40px;     /* absolute minimum for readability/touch */
-    --st-max:  72px;     /* hard upper bound */
-    --st-reduce-per: 0.06;  /* shrink 6% per letter beyond 6 */
-    --st-reduce-cap: 0.45;  /* cap total reduction at 45% */
-  }
-
-  .slots, .pool{ display:flex; gap:min(12px,2.8vw); min-height:80px; justify-content:center; }
+  /* -------------- Spelling Test: match Crossword sizes -------------- */
+  /* keep scroll so long words don’t squash */
   .slots{
+    display:flex;
+    gap:min(12px,2.8vw);
+    min-height:80px;
+    justify-content:center;
     flex-wrap: nowrap;
-    overflow-x: auto;               /* scroll long words horizontally */
-    overscroll-behavior-x: contain; /* avoid page rubber-band on iOS */
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
   }
+  .pool{
+    display:flex; gap:min(12px,2.8vw); min-height:80px; justify-content:center; flex-wrap:wrap;
+  }
   .slot{
-    width: var(--st-size); height: var(--st-size);
-    border:3px dashed #ffffffbb; background:#ffffff22; border-radius:18px; display:flex; align-items:center; justify-content:center;
-    font-size: calc(var(--st-size)*0.6); transition: transform .12s ease, background .2s ease, border-color .2s ease;
-    touch-action: pan-x pan-y; /* keep scrolling responsive */
+    /* same footprint as crossword cells */
+    width: clamp(38px, 8vw, 48px);
+    height: clamp(38px, 8vw, 48px);
+    border:3px dashed #ffffffbb;
+    background:#ffffff22;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size: clamp(18px, 5.6vw, 24px);
+    transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    touch-action: pan-x pan-y;
     padding:2px;
   }
-  .slot.drop-ok{ border-color:#22d3ee; background:#ffffff55; transform:scale(1.05); }
+  .slot.drop-ok{ border-color:#22d3ee; background:#ffffff55; transform:scale(1.04); }
   .slot.filled{ border-style:solid; border-color:#ffffff; background:#ffffffbb; }
-  #st .slots .tile, #st .pool .tile{ width:var(--st-size); height:var(--st-size); font-size:calc(var(--st-size)*0.6); border-radius:18px; }
-  .st-result{ text-align:center; font-weight:1000; min-height:34px; }
-  .ok{color:var(--ok)} .bad{color:var(--bad)}
+
+  /* ST tiles use same size as CW tiles */
+  #st .slots .tile,
+  #st .pool .tile{
+    width: clamp(38px, 8vw, 48px);
+    height: clamp(38px, 8vw, 48px);
+    font-size: clamp(18px, 5.6vw, 24px);
+    border-radius:10px;
+  }
+
+  /* Fix “thin letters” while dragging in ST: disable scale */
+  #st .tile.dragging{ transform: none; box-shadow:0 16px 26px rgba(0,0,0,.28); }
 
   /* Crossword */
   .boardWrap{display:grid;place-items:center;overflow:auto}
@@ -667,43 +681,6 @@ function stFinishTouchDragTo(target){
   }
 }
 
-/* Progressive tile sizing for long words */
-function stFitTileSizeForWord(n){
-  const container = st.slots;
-  const styles = getComputedStyle(container);
-  const gap = parseFloat(styles.columnGap || styles.gap || '12') || 12;
-  const W = Math.max(container.clientWidth, 0);
-  if (!W || n<=0){ container.style.removeProperty('--st-size'); return; }
-
-  // Read tunables from CSS
-  const root = getComputedStyle(document.getElementById('st'));
-  const BASE = parseFloat(root.getPropertyValue('--st-base')) || 64;
-  const MIN  = parseFloat(root.getPropertyValue('--st-min'))  || 40;
-  const MAX  = parseFloat(root.getPropertyValue('--st-max'))  || 72;
-  const PER  = parseFloat(root.getPropertyValue('--st-reduce-per')) || 0.06; // 6% per extra letter
-  const CAP  = parseFloat(root.getPropertyValue('--st-reduce-cap')) || 0.45; // max 45% reduction
-
-  // Progressive reduction beyond 6 letters
-  let scaled = BASE;
-  if (n > 6){
-    const extra = n - 6;
-    const scaleDown = Math.min(CAP, PER * extra); // cap total reduction
-    scaled = BASE * (1 - scaleDown);
-  }
-
-  // "Perfect" size if we tried to fit all tiles without scrolling
-  const perfect = Math.floor((W - gap*(n-1)) / n);
-
-  // Choose the size:
-  // - prefer the smaller of (scaled, perfect) to usually fit
-  // - but never go below MIN; if perfect < MIN, keep MIN and allow scroll
-  let size = Math.min(scaled, perfect);
-  if (size < MIN) size = MIN;
-  if (size > MAX) size = MAX;
-
-  container.style.setProperty('--st-size', size + 'px');
-}
-
 function stBuildWord(word){
   stClearStage();
 
@@ -723,12 +700,6 @@ function stBuildWord(word){
     });
     st.slots.appendChild(slot);
   });
-
-  stFitTileSizeForWord(word.length);
-  const onResize = ()=> stFitTileSizeForWord(stWords[stIndex]?.length || 0);
-  window.addEventListener('resize', onResize, {passive:true});
-  st._removeRefit && st._removeRefit();
-  st._removeRefit = ()=> window.removeEventListener('resize', onResize);
 
   stTilesOriginal = [...word].map((ch, idx) => ({ id:`${ch}-${idx}-${crypto.getRandomValues(new Uint32Array(1))[0]}`, ch, index:idx, total:word.length }));
   stPreviewing=true; stSetBtnsDisabled(true);
@@ -790,7 +761,6 @@ function stCheckSolved(targetWord){
   }
 }
 function stNextWord(){
-  st._removeRefit && st._removeRefit();
   stIndex++; if (stIndex>=stWords.length) return stFinish();
   stUpdatePills(); stBuildWord(stWords[stIndex]);
 }
