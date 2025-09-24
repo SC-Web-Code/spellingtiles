@@ -118,12 +118,15 @@
   .tile.dragging{opacity:.92; transform:scale(1.08) rotate(1.2deg); box-shadow:0 16px 26px rgba(0,0,0,.28); filter:saturate(1.2)}
   .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; }
 
-  /* Spelling Test */
+  /* ---------------- Spelling Test sizing (progressive) ---------------- */
   #st{
-    --st-size: 64px;
-    --st-min: 44px;   /* larger minimum for touch */
-    --st-max: 72px;
+    --st-base: 64px;     /* base when word length ≤ 6 */
+    --st-min:  40px;     /* absolute minimum for readability/touch */
+    --st-max:  72px;     /* hard upper bound */
+    --st-reduce-per: 0.06;  /* shrink 6% per letter beyond 6 */
+    --st-reduce-cap: 0.45;  /* cap total reduction at 45% */
   }
+
   .slots, .pool{ display:flex; gap:min(12px,2.8vw); min-height:80px; justify-content:center; }
   .slots{
     flex-wrap: nowrap;
@@ -351,13 +354,13 @@ elephant"></textarea>
   </div>
 
 <script>
-/* -------------------- Polyfill for CSS.escape on older Safari -------------------- */
+/* ---------- CSS.escape polyfill (old Safari) ---------- */
 if (!window.CSS || !CSS.escape) {
   window.CSS = window.CSS || {};
   CSS.escape = CSS.escape || function (v) { return String(v).replace(/[^a-zA-Z0-9_\\-]/g, '\\\\$&'); };
 }
 
-/* -------------------- Quick UI tile helpers -------------------- */
+/* ---------- UI tile helpers ---------- */
 function uiHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
 function makeUITile(letter, i, total, cls){
   const t=document.createElement('div');
@@ -391,7 +394,7 @@ function setButtonTileLabel(btn, text, sizeClass='chipTile'){
   btn.setAttribute('aria-label', text);
 }
 
-/* -------------------- Theme handling -------------------- */
+/* ---------- Themes ---------- */
 const themes = [
   { name:"Candy", bg:"linear-gradient(120deg,#22d3ee 0%,#a78bfa 45%,#f472b6 100%)",
     brand:"linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6)",
@@ -446,7 +449,7 @@ caseBtn.addEventListener('click', ()=>{
   setButtonTileLabel(caseBtn, lower ? 'aa' : 'AA', 'chipTile');
 });
 
-/* -------------------- Section label + hero -------------------- */
+/* ---------- Section label + hero ---------- */
 renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
 const sectionChip = document.getElementById('sectionChip');
 function setSectionLabel(text){
@@ -456,7 +459,7 @@ function setSectionLabel(text){
   sectionChip.appendChild(span);
 }
 
-/* -------------------- Common helpers -------------------- */
+/* ---------- Common helpers ---------- */
 const inputWords = document.getElementById('inputWords');
 const startSpellingBtn = document.getElementById('startSpellingBtn');
 const buildCrosswordBtn = document.getElementById('buildCrosswordBtn');
@@ -486,7 +489,7 @@ function pickCap(words, cap){
 function enableNoSelect(){ document.body.classList.add('no-select'); }
 function disableNoSelect(){ document.body.classList.remove('no-select'); }
 
-/* -------------------- SPELLING TEST -------------------- */
+/* ===================== SPELLING TEST ===================== */
 const st = {
   root: document.getElementById('st'),
   slots: document.getElementById('st-slots'),
@@ -562,7 +565,7 @@ function stMakeTile(obj){
   return t;
 }
 
-/* ---- Touch drag with movement threshold (no immediate DOM swaps) ---- */
+/* Touch drag with movement threshold (no immediate DOM swaps) */
 let stDrag = null;
 const ST_DRAG_SLOP = 8; // pixels
 
@@ -664,6 +667,7 @@ function stFinishTouchDragTo(target){
   }
 }
 
+/* Progressive tile sizing for long words */
 function stFitTileSizeForWord(n){
   const container = st.slots;
   const styles = getComputedStyle(container);
@@ -671,12 +675,32 @@ function stFitTileSizeForWord(n){
   const W = Math.max(container.clientWidth, 0);
   if (!W || n<=0){ container.style.removeProperty('--st-size'); return; }
 
-  const rootStyles = getComputedStyle(document.getElementById('st'));
-  const minSize = parseFloat(rootStyles.getPropertyValue('--st-min')) || 44;
-  const maxSize = parseFloat(rootStyles.getPropertyValue('--st-max')) || 72;
+  // Read tunables from CSS
+  const root = getComputedStyle(document.getElementById('st'));
+  const BASE = parseFloat(root.getPropertyValue('--st-base')) || 64;
+  const MIN  = parseFloat(root.getPropertyValue('--st-min'))  || 40;
+  const MAX  = parseFloat(root.getPropertyValue('--st-max'))  || 72;
+  const PER  = parseFloat(root.getPropertyValue('--st-reduce-per')) || 0.06; // 6% per extra letter
+  const CAP  = parseFloat(root.getPropertyValue('--st-reduce-cap')) || 0.45; // max 45% reduction
 
+  // Progressive reduction beyond 6 letters
+  let scaled = BASE;
+  if (n > 6){
+    const extra = n - 6;
+    const scaleDown = Math.min(CAP, PER * extra); // cap total reduction
+    scaled = BASE * (1 - scaleDown);
+  }
+
+  // "Perfect" size if we tried to fit all tiles without scrolling
   const perfect = Math.floor((W - gap*(n-1)) / n);
-  const size = perfect < minSize ? minSize : Math.min(maxSize, perfect);
+
+  // Choose the size:
+  // - prefer the smaller of (scaled, perfect) to usually fit
+  // - but never go below MIN; if perfect < MIN, keep MIN and allow scroll
+  let size = Math.min(scaled, perfect);
+  if (size < MIN) size = MIN;
+  if (size > MAX) size = MAX;
+
   container.style.setProperty('--st-size', size + 'px');
 }
 
@@ -811,7 +835,7 @@ startSpellingBtn.addEventListener('click', ()=>{
   showOnly('st'); stUpdatePills(); stBuildWord(stWords[0]);
 });
 
-/* -------------------- CROSSWORD -------------------- */
+/* ===================== CROSSWORD ===================== */
 const cw = {
   root: document.getElementById('cw'),
   board: document.getElementById('cw-board'),
@@ -1119,7 +1143,7 @@ function startCrosswordFlow(words){
   cwBuildChecklist(CW.words);
 }
 
-/* -------------------- WORD SEARCH -------------------- */
+/* ===================== WORD SEARCH ===================== */
 const ws = {
   root: document.getElementById('ws'),
   grid: document.getElementById('ws-grid'),
@@ -1324,7 +1348,7 @@ function wsRender(state){
   ws.grid.addEventListener('pointercancel', ()=> endSelection() );
 }
 
-/* -------------------- VIEW SWITCH -------------------- */
+/* ---------- View switch ---------- */
 function showOnly(id){
   document.getElementById('setup').classList.toggle('hidden', id!=='setup');
   document.getElementById('st').classList.toggle('hidden', id!=='st');
