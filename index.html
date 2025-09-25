@@ -36,7 +36,7 @@
   .wrap{ width:min(1200px,96vw); }
   .hidden{ display:none !important; }
 
-  /* disable text selection while dragging */
+  /* disable text selection only while pointer is down over draggable areas */
   .no-select, .no-select *{ user-select:none !important; -webkit-user-select:none !important; }
 
   /* lowercase visual toggle */
@@ -246,7 +246,7 @@ elephant"></textarea>
         </div>
       </div>
 
-      <!-- SPELLING TEST (full-width play; summary at bottom) -->
+      <!-- SPELLING TEST -->
       <div id="st" class="hidden">
         <div class="row-top">
           <p class="subtitle">Drag or tap tiles into the slots to spell each word.</p>
@@ -267,7 +267,7 @@ elephant"></textarea>
           <div class="st-result" id="st-feedback"></div>
         </div>
 
-        <!-- Summary only shows AFTER finish; it’s at the very bottom now -->
+        <!-- Summary at bottom -->
         <div id="st-summary" class="hidden" style="margin-top:14px">
           <div id="st-completeText" class="inlineTiles" aria-live="polite" style="margin-bottom:6px"></div>
           <p id="st-final" style="margin:4px 0;"></p>
@@ -294,7 +294,7 @@ elephant"></textarea>
         </div>
       </div>
 
-      <!-- CROSSWORD (condensed side panel) -->
+      <!-- CROSSWORD -->
       <div id="cw" class="hidden">
         <div class="row-top">
           <p class="subtitle">Drag or tap letters into the grid. Each finished word ticks off.</p>
@@ -328,7 +328,7 @@ elephant"></textarea>
         <div class="st-result" id="cw-feedback"></div>
       </div>
 
-      <!-- WORD SEARCH (condensed side panel) -->
+      <!-- WORD SEARCH -->
       <div id="ws" class="hidden">
         <div class="row-top">
           <p class="subtitle">Drag across letters to find words.</p>
@@ -372,7 +372,7 @@ if (!window.CSS || !CSS.escape) {
   CSS.escape = CSS.escape || function (v) { return String(v).replace(/[^a-zA-Z0-9_\\-]/g, '\\\\$&'); };
 }
 
-/* ---------- Tile helpers ---------- */
+/* ---------- Tiny utils ---------- */
 function uiHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
 function makeUITile(letter, i, total, cls){
   const t=document.createElement('div');
@@ -405,6 +405,12 @@ function setButtonTileLabel(btn, text, sizeClass='chipTile'){
   btn.appendChild(span);
   btn.setAttribute('aria-label', text);
 }
+function setSectionLabel(text){
+  const sectionChip=document.getElementById('sectionChip');
+  sectionChip.innerHTML='';
+  const span=document.createElement('span'); span.className='inlineTiles';
+  renderTiles(span, text, 'uiLabel'); sectionChip.appendChild(span);
+}
 
 /* ---------- Themes & Case ---------- */
 const themes = [
@@ -435,11 +441,7 @@ function applyTheme(t){
 }
 themeBtn.addEventListener('click', ()=>{ themeIndex=(themeIndex+1)%themes.length; applyTheme(themes[themeIndex]); });
 applyTheme(themes[themeIndex]);
-function setSectionLabel(text){ const sectionChip=document.getElementById('sectionChip'); sectionChip.innerHTML=''; const span=document.createElement('span'); span.className='inlineTiles'; renderTiles(span, text, 'uiLabel'); sectionChip.appendChild(span); }
-renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
-setSectionLabel('Setup');
 
-// case
 const caseBtn = document.getElementById('caseBtn');
 setButtonTileLabel(caseBtn, 'Aa', 'chipTile');
 caseBtn.addEventListener('click', ()=>{
@@ -447,6 +449,11 @@ caseBtn.addEventListener('click', ()=>{
   const lower = document.body.classList.contains('lowercase');
   setButtonTileLabel(caseBtn, lower ? 'aa' : 'AA', 'chipTile');
 });
+
+/* ---------- Initial hero + section ---------- */
+renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
+setSectionLabel('Setup');
+setButtonTileLabel(themeBtn, 'Theme', 'chipTile');
 
 /* ---------- Common helpers ---------- */
 const inputWords = document.getElementById('inputWords');
@@ -474,9 +481,10 @@ function pickCap(words, cap){
   return arr.slice(0, cap);
 }
 
-/* utility: temporarily disable selection while dragging */
-function enableNoSelect(){ document.body.classList.add('no-select'); }
-function disableNoSelect(){ document.body.classList.remove('no-select'); }
+/* selection guard helpers */
+let _selectGuards = 0;
+function enableNoSelect(){ if(++_selectGuards===1) document.body.classList.add('no-select'); }
+function disableNoSelect(){ if(_selectGuards>0 && --_selectGuards===0) document.body.classList.remove('no-select'); }
 
 /* ===================== SPELLING TEST ===================== */
 const st = {
@@ -522,7 +530,6 @@ function stMakeTile(obj){
   t.style.background = `linear-gradient(180deg, hsla(${h}, 90%, 85%, .95), hsla(${h}, 95%, 75%, .95))`;
   t.style.borderColor = `hsla(${h}, 95%, 92%, .9)`;
 
-  // mouse drag
   t.addEventListener('dragstart', e=>{
     enableNoSelect();
     t.classList.add('dragging'); stCurrentDragTile = t;
@@ -532,7 +539,6 @@ function stMakeTile(obj){
   });
   t.addEventListener('dragend', ()=>{ t.classList.remove('dragging'); stCurrentDragTile=null; disableNoSelect(); });
 
-  // click select (ignored if last pointer was touch)
   t.addEventListener('click', ()=>{
     if (window.__lastPointerWasTouch) return;
     if(stPreviewing) return;
@@ -541,7 +547,6 @@ function stMakeTile(obj){
     stSelected=t; t.classList.add('dragging');
   });
 
-  // touch drag with slop
   t.addEventListener('pointerdown', e=>{
     if (e.pointerType!=='touch') return;
     if (stPreviewing) return;
@@ -722,15 +727,13 @@ function stBuildWord(word){
     sec--; st.previewPill.textContent=`👀 Memorise: ${sec}`;
     if (sec<=0){
       clearInterval(timer);
-      [...st.slots.querySelectorAll('.tile')].forEach(t=>t.classList.add('fade-out'));
-      setTimeout(()=>{
-        const der=stDerange(stTilesOriginal);
-        [...st.slots.querySelectorAll('.tile')].forEach(t=>st.pool.appendChild(t));
-        st.pool.innerHTML='';
-        der.forEach((t,i)=> st.pool.appendChild(stMakeTile({...t,index:i,total:der.length})));
-        stSetTilesDraggable(true); stMarkFilled(); st.previewPill.style.display='none'; stPreviewing=false; stSetBtnsDisabled(false);
-        st.feedback.textContent=''; st.feedback.classList.remove('ok','bad');
-      },200);
+      const der=stDerange(stTilesOriginal);
+      // move shown tiles to pool, then shuffle into pool
+      [...st.slots.querySelectorAll('.tile')].forEach(t=>st.pool.appendChild(t));
+      st.pool.innerHTML='';
+      der.forEach((t,i)=> st.pool.appendChild(stMakeTile({...t,index:i,total:der.length})));
+      stSetTilesDraggable(true); stMarkFilled(); st.previewPill.style.display='none'; stPreviewing=false; stSetBtnsDisabled(false);
+      st.feedback.textContent=''; st.feedback.classList.remove('ok','bad');
     }
   },1000);
 
@@ -802,8 +805,7 @@ cw.toggleBtn.addEventListener('click', ()=>{
 });
 
 function buildCrossword(rawWords, MAX=40){
-  const words = rawWords.map(w=>w.toUpperCase()).filter(Boolean);
-  words.sort((a,b)=>b.length-a.length);
+  const words = rawWords.map(w=>w.toUpperCase()).filter(Boolean).sort((a,b)=>b.length-a.length);
   const grid=new Map(), placed=[];
   const key=(x,y)=>x+','+y, get=(x,y)=>grid.get(key(x,y)), has=(x,y)=>grid.has(key(x,y)), set=(x,y,ch)=>grid.set(key(x,y),ch);
 
@@ -855,7 +857,7 @@ function buildCrossword(rawWords, MAX=40){
   }
   function placeSnap(word,x,y,dir,snap){ for (let i=0;i<word.length;i++){ const gx=x+(dir==='across'?i:0), gy=y+(dir==='down'?i:0); const k=key(gx,gy); if (!snap.has(k)) snap.set(k,word[i]); } }
   function tryColorBridge(word,index){
-    for (const color of COLOR_WORDS){
+    for (const color of ["PURPLE","GREEN","BLUE","RED","ORANGE","YELLOW","PINK","BLACK","WHITE","BROWN","GREY"]){
       if (usedColors.has(color)) continue;
       const snap=new Map(grid); let colorPlaced=false, colorPos=null;
       const entries=Array.from(grid.entries());
@@ -889,7 +891,6 @@ function buildCrossword(rawWords, MAX=40){
     return false;
   }
 
-  const words = rawWords.map(w=>w.toUpperCase()).filter(Boolean).sort((a,b)=>b.length-a.length);
   if (words.length) place(words[0],0,0,'across',0);
   let nextRow=2, nextCol=-2;
   for (let wi=1; wi<words.length; wi++){
@@ -923,7 +924,6 @@ function cwBuildChecklist(words){
     cw.listUI.appendChild(item); wordListItems.set(wi,item);
   });
   cwUpdateProgress();
-  // Update sidepanel header count
   document.getElementById('cw-wordlist-title').textContent = `Words (${words.length})`;
 }
 function cwMarkDone(wi){
@@ -1043,7 +1043,6 @@ function cwMakeTile(ch,i,total){
     if (curr && curr!==t){ curr.classList.remove('dragging'); }
     t.classList.toggle('dragging');
   });
-  // touch drag
   t.addEventListener('pointerdown', e=>{
     if (e.pointerType==='mouse') return;
     e.preventDefault(); enableNoSelect();
@@ -1267,17 +1266,15 @@ function wsRender(state){
   ws.grid.addEventListener('pointercancel', ()=> endSelection() );
 }
 
-/* ---------- View switch ---------- */
+/* ---------- View switch (simple & safe) ---------- */
 function showOnly(id){
-  document.getElementById('setup').classList.toggle('hidden', id!=='setup');
-  document.getElementById('st').classList.toggle('hidden', id!=='st');
-  document.getElementById('cw').classList.toggle('hidden', id!=='cw');
-  document.getElementById('ws').classList.toggle('hidden', id!=='ws');
+  const ids=['setup','st','cw','ws'];
+  ids.forEach(x=> document.getElementById(x).classList.toggle('hidden', x!==id));
   const label = id==='setup'?'Setup': id==='st'?'Spelling Test' : id==='cw'?'Crossword' : 'Word Search';
   setSectionLabel(label);
 }
 
-/* ---------- Build buttons ---------- */
+/* ---------- Top-level build buttons ---------- */
 buildCrosswordBtn.addEventListener('click', ()=>{
   const words = parseWords(inputWords.value);
   if (!words.length){ alert('Please enter at least one word.'); return; }
@@ -1290,18 +1287,6 @@ buildWordSearchBtn.addEventListener('click', ()=>{
   const cap = parseInt(capInput.value,10) || 12;
   startWordSearchFlow(pickCap(words, cap));
 });
-
-/* ---------- Title tiles ---------- */
-setButtonTileLabel(themeBtn, 'Theme', 'chipTile');
-renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
-
-/* ---------- Build word on load from ST ---------- */
-function stBuildWordSafe(){
-  if (!stWords.length) return;
-  stUpdatePills(); stBuildWord(stWords[0]);
-}
-
-/* ---------- Crossword / Word Search start hooks (from ST summary) exist above ---------- */
 </script>
 </body>
 </html>
