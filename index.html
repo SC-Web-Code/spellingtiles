@@ -36,7 +36,7 @@
   .wrap{ width:min(1200px,96vw); }
   .hidden{ display:none !important; }
 
-  /* disable text selection globally while dragging */
+  /* disable text selection while dragging */
   .no-select, .no-select *{ user-select:none !important; -webkit-user-select:none !important; }
 
   /* lowercase visual toggle */
@@ -50,7 +50,7 @@
   /* hero title */
   .titleHero{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
 
-  /* ---- tile visual base (unified across app) ---- */
+  /* ---- tile visual base (unified) ---- */
   .tile{
     user-select:none;
     width:clamp(36px, 7.5vw, 46px);
@@ -112,77 +112,71 @@
   textarea{width:100%;min-height:130px;resize:vertical;font-size:16px;font-weight:600;background:#ffffffc9;border:2px dashed #ffffffaa;color:#0b1220;border-radius:16px;padding:12px; box-sizing:border-box;}
 
   .row-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  .two-col{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
-  @media(min-width:1000px){ .two-col{grid-template-columns:minmax(340px,1.1fr) minmax(300px,.9fr);} }
 
-  .tile.dragging{opacity:.92; transform:scale(1.08) rotate(1.2deg); box-shadow:0 16px 26px rgba(0,0,0,.28); filter:saturate(1.2)}
-  .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; }
-
-  /* -------------- Spelling Test: match Crossword sizes -------------- */
-  /* keep scroll so long words don’t squash */
+  /* ======= SPELLING TEST: Full-width playfield + bottom summary ======= */
+  #st .play{ display:block; }
   .slots{
-    display:flex;
-    gap:min(12px,2.8vw);
-    min-height:80px;
-    justify-content:center;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
+    display:flex; gap:min(12px,2.8vw); min-height:80px; justify-content:center;
+    flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch;
   }
-  .pool{
-    display:flex; gap:min(12px,2.8vw); min-height:80px; justify-content:center; flex-wrap:wrap;
-  }
+  .pool{ display:flex; gap:min(12px,2.8vw); min-height:80px; justify-content:center; flex-wrap:wrap; }
   .slot{
-    /* same footprint as crossword cells */
-    width: clamp(38px, 8vw, 48px);
-    height: clamp(38px, 8vw, 48px);
-    border:3px dashed #ffffffbb;
-    background:#ffffff22;
-    border-radius:10px;
+    width: clamp(38px, 8vw, 48px); height: clamp(38px, 8vw, 48px);
+    border:3px dashed #ffffffbb; background:#ffffff22; border-radius:10px;
     display:flex; align-items:center; justify-content:center;
     font-size: clamp(18px, 5.6vw, 24px);
     transition: transform .12s ease, background .2s ease, border-color .2s ease;
-    touch-action: pan-x pan-y;
-    padding:2px;
+    touch-action: pan-x pan-y; padding:2px;
   }
   .slot.drop-ok{ border-color:#22d3ee; background:#ffffff55; transform:scale(1.04); }
   .slot.filled{ border-style:solid; border-color:#ffffff; background:#ffffffbb; }
+  #st .slots .tile, #st .pool .tile{ width: clamp(38px, 8vw, 48px); height: clamp(38px, 8vw, 48px); font-size: clamp(18px, 5.6vw, 24px); border-radius:10px; }
+  #st .tile.dragging{ transform:none; box-shadow:0 16px 26px rgba(0,0,0,.28); }
 
-  /* ST tiles use same size as CW tiles */
-  #st .slots .tile,
-  #st .pool .tile{
-    width: clamp(38px, 8vw, 48px);
-    height: clamp(38px, 8vw, 48px);
-    font-size: clamp(18px, 5.6vw, 24px);
-    border-radius:10px;
+  /* ======= CROSSWORD / WORD SEARCH condensed layouts ======= */
+  .puzzle-layout{
+    display:grid; align-items:start; gap:14px;
+    grid-template-columns: 1fr minmax(180px, 260px);
   }
-
-  /* Fix “thin letters” while dragging in ST: disable scale */
-  #st .tile.dragging{ transform: none; box-shadow:0 16px 26px rgba(0,0,0,.28); }
-
-  /* Crossword */
+  @media (max-width: 1000px){
+    .puzzle-layout{ grid-template-columns: 1fr; }
+  }
   .boardWrap{display:grid;place-items:center;overflow:auto}
   .board{display:grid;gap:6px;background:#ffffff66;padding:12px;border-radius:16px}
+
+  /* Crossword cells / tiles */
   .cell{width:clamp(38px,8vw,48px);height:clamp(38px,8vw,48px);display:flex;align-items:center;justify-content:center;
     border:3px solid #fff;border-radius:10px;font-weight:1000;font-size:clamp(18px,5.6vw,24px);background:#ffffffaa; position:relative; }
   .cell.block{background:transparent;border:none}
   .cell.given{background:var(--given-bg)}
   .cell.slot{border-style:dashed; background:var(--slot-bg)}
   .cell.slot.drop-ok{border-color:#22d3ee;background:#ffffffaa;transform:scale(1.04)}
-  .cw-pool{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  #cw .pool{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
   #cw .pool .tile, #cw .board .tile{ width:clamp(38px,8vw,48px); height:clamp(38px,8vw,48px); font-size:clamp(18px,5.6vw,24px); border-radius:10px; }
 
-  .checklist{ background:#ffffff88; border:1px solid #ffffffcc; border-radius:16px; padding:12px; backdrop-filter: blur(6px); }
-  .wordItem{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:12px; background:#ffffffc9; border:1px solid #ffffff; font-weight:900; margin-bottom:8px }
-  .wordItem .mark{ width:22px; height:22px; display:grid; place-items:center; border-radius:999px; border:2px solid #93c5fd; font-size:14px }
+  /* Condensed side panel */
+  .sidepanel{
+    background:#ffffff88; border:1px solid #ffffffcc; border-radius:16px; padding:10px; backdrop-filter: blur(6px);
+  }
+  .sidepanel .sp-head{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;
+  }
+  .sidepanel .sp-title{ font-weight:900; }
+  .sidepanel button.sp-toggle{ padding:6px 10px; border-radius:10px; font-weight:900; font-size:13px; }
+  .sidepanel.collapsed .sp-body{ display:none; }
+
+  /* Compact word list styling */
+  .checklist{ display:flex; flex-direction:column; gap:6px; }
+  .wordItem{
+    display:flex; align-items:center; gap:6px; padding:6px 8px;
+    border-radius:10px; background:#ffffffc9; border:1px solid #ffffff; font-weight:900;
+    font-size:14px; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .wordItem .mark{ width:18px; height:18px; display:grid; place-items:center; border-radius:999px; border:2px solid #93c5fd; font-size:11px; }
   .wordItem.done{ background:#d1fae5; border-color:#bbf7d0 }
   .wordItem.done .mark{ border-color:#10b981; background:#10b981; color:#fff }
 
-  /* Section chip */
-  #sectionChip .tile.uiLabel{ width:clamp(20px,2.6vw,28px); height:clamp(20px,2.6vw,28px); font-size:clamp(13px,1.9vw,16px); }
-
-  /* Word Search */
+  /* Word Search grid */
   #ws .grid{display:grid;gap:6px;background:#ffffff66;padding:12px;border-radius:16px;touch-action:none}
   #ws .gcell{
     width:clamp(34px,7.2vw,44px); height:clamp(34px,7.2vw,44px);
@@ -192,6 +186,12 @@
   }
   #ws .gcell.sel{ background:#fde68a; border-color:#facc15; }
   #ws .gcell.found{ background:#bbf7d0; border-color:#10b981; }
+
+  /* Section chip */
+  #sectionChip .tile.uiLabel{ width:clamp(20px,2.6vw,28px); height:clamp(20px,2.6vw,28px); font-size:clamp(13px,1.9vw,16px); }
+
+  .tile.dragging{opacity:.92; transform:scale(1.08) rotate(1.2deg); box-shadow:0 16px 26px rgba(0,0,0,.28); filter:saturate(1.2)}
+  .drag-ghost{ position:fixed; z-index:9999; pointer-events:none; }
 </style>
 </head>
 <body>
@@ -215,50 +215,38 @@
 
       <!-- SETUP -->
       <div id="setup">
-        <div class="two-col">
-          <div>
-            <p class="pill" style="display:block">Paste words (one per line or comma-separated):</p>
-            <textarea id="inputWords" placeholder="cat
+        <div class="controls" style="margin:0 0 8px 0">
+          <p class="pill" style="margin:0">Paste words (one per line or comma-separated):</p>
+        </div>
+        <textarea id="inputWords" placeholder="cat
 purple
 friend
 because
 elephant"></textarea>
-            <div class="controls">
-              <button id="startSpellingBtn" class="accent">START</button>
-              <button id="buildCrosswordBtn">CROSSWORD</button>
-              <button id="buildWordSearchBtn">WORD SEARCH</button>
-            </div>
-          </div>
 
-          <div>
-            <div class="pill" style="display:block">Puzzle options</div>
-            <div class="controls">
-              <label class="pill" style="gap:6px">Max words (CW/WS):
-                <input id="capInput" type="number" min="3" max="30" value="12" style="width:84px;padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
-              </label>
-            </div>
-            <div class="controls">
-              <span class="pill">Crossword prefilled:
-                <strong id="cluePctLabel">30%</strong>
-              </span>
-              <input id="cluePct" type="range" min="0" max="80" value="30" style="accent-color:#8b5cf6; width:220px">
-            </div>
-            <div class="controls">
-              <label class="pill" style="gap:6px">Word Search max grid:
-                <input id="wsMax" type="number" min="8" max="16" value="16" style="width:84px;padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
-              </label>
-              <label class="pill" style="gap:6px">Allow diagonals
-                <input id="wsDiag" type="checkbox" checked>
-              </label>
-              <label class="pill" style="gap:6px">Allow backwards
-                <input id="wsBack" type="checkbox" checked>
-              </label>
-            </div>
-          </div>
+        <div class="controls">
+          <button id="startSpellingBtn" class="accent">START</button>
+          <button id="buildCrosswordBtn">CROSSWORD</button>
+          <button id="buildWordSearchBtn">WORD SEARCH</button>
+        </div>
+
+        <div class="controls" style="flex-wrap:wrap">
+          <span class="pill">Crossword prefilled:
+            <strong id="cluePctLabel">30%</strong>
+          </span>
+          <input id="cluePct" type="range" min="0" max="80" value="30" style="accent-color:#8b5cf6; width:220px">
+          <label class="pill" style="gap:6px">Max words (CW/WS):
+            <input id="capInput" type="number" min="3" max="30" value="12" style="width:84px;padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
+          </label>
+          <label class="pill" style="gap:6px">WS max grid:
+            <input id="wsMax" type="number" min="8" max="16" value="16" style="width:84px;padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
+          </label>
+          <label class="pill" style="gap:6px">Diagonals <input id="wsDiag" type="checkbox" checked></label>
+          <label class="pill" style="gap:6px">Backwards <input id="wsBack" type="checkbox" checked></label>
         </div>
       </div>
 
-      <!-- SPELLING TEST -->
+      <!-- SPELLING TEST (full-width play; summary at bottom) -->
       <div id="st" class="hidden">
         <div class="row-top">
           <p class="subtitle">Drag or tap tiles into the slots to spell each word.</p>
@@ -272,45 +260,44 @@ elephant"></textarea>
           <span class="pill" id="st-score">⭐ Score: 0</span>
         </div>
 
-        <div class="two-col" style="align-items:start">
-          <div>
-            <div class="subtitle" id="st-prompt">Place the tiles on the slots in the right order.</div>
-            <div class="slots" id="st-slots"></div>
-            <div class="pool" id="st-pool"></div>
-            <div class="st-result" id="st-feedback"></div>
+        <div class="play">
+          <div class="subtitle" id="st-prompt">Place the tiles on the slots in the right order.</div>
+          <div class="slots" id="st-slots"></div>
+          <div class="pool" id="st-pool"></div>
+          <div class="st-result" id="st-feedback"></div>
+        </div>
+
+        <!-- Summary only shows AFTER finish; it’s at the very bottom now -->
+        <div id="st-summary" class="hidden" style="margin-top:14px">
+          <div id="st-completeText" class="inlineTiles" aria-live="polite" style="margin-bottom:6px"></div>
+          <p id="st-final" style="margin:4px 0;"></p>
+          <div id="st-percentText" class="inlineTiles" aria-live="polite" style="margin-bottom:8px"></div>
+
+          <div class="controls" style="flex-wrap:wrap">
+            <label class="pill" style="gap:6px">Use:
+              <select id="afterUseMode" style="padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
+                <option value="all">All words</option>
+                <option value="correct">Only correct words</option>
+              </select>
+            </label>
+            <label class="pill" style="gap:6px">Max words:
+              <input id="afterCap" type="number" min="3" max="30" value="12" style="width:84px;padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
+            </label>
           </div>
 
-          <div id="st-summary" style="display:none">
-            <div id="st-completeText" class="inlineTiles" aria-live="polite"></div>
-            <p id="st-final" style="margin-top:8px;"></p>
-            <div id="st-percentText" class="inlineTiles" aria-live="polite"></div>
-            <div class="controls" style="flex-direction:column;align-items:flex-start; margin-top:8px">
-              <div class="controls">
-                <label class="pill" style="gap:6px">Use:
-                  <select id="afterUseMode" style="padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
-                    <option value="all">All words</option>
-                    <option value="correct">Only correct words</option>
-                  </select>
-                </label>
-                <label class="pill" style="gap:6px">Max words:
-                  <input id="afterCap" type="number" min="3" max="30" value="12" style="width:84px;padding:6px 8px;border-radius:10px;border:1px solid var(--pill-brd)">
-                </label>
-              </div>
-              <div class="controls">
-                <button id="st-buildCrosswordFromHere" class="accent">Build Crossword</button>
-                <button id="st-buildWordSearchFromHere">Build Word Search</button>
-                <button id="st-editBtn">EDIT</button>
-                <button id="st-retryBtn">RETRY</button>
-              </div>
-            </div>
+          <div class="controls">
+            <button id="st-buildCrosswordFromHere" class="accent">Build Crossword</button>
+            <button id="st-buildWordSearchFromHere">Build Word Search</button>
+            <button id="st-editBtn">EDIT</button>
+            <button id="st-retryBtn">RETRY</button>
           </div>
         </div>
       </div>
 
-      <!-- CROSSWORD -->
+      <!-- CROSSWORD (condensed side panel) -->
       <div id="cw" class="hidden">
         <div class="row-top">
-          <p class="subtitle">Drag or tap letters into the grid. Each finished word ticks off on the right.</p>
+          <p class="subtitle">Drag or tap letters into the grid. Each finished word ticks off.</p>
           <span class="pill" id="cw-progress">Completed: 0 / 0</span>
         </div>
 
@@ -323,22 +310,28 @@ elephant"></textarea>
           </div>
         </div>
 
-        <div class="two-col">
+        <div class="puzzle-layout">
           <div class="boardWrap"><div id="cw-board" class="board"></div></div>
-          <div class="checklist">
-            <div id="cw-wordlist-title" class="inlineTiles" aria-label="Word List"></div>
-            <div id="cw-listUI"></div>
-          </div>
+
+          <aside id="cw-side" class="sidepanel collapsed">
+            <div class="sp-head">
+              <span class="sp-title pill" id="cw-wordlist-title">Words</span>
+              <button class="sp-toggle" id="cw-toggle">Show</button>
+            </div>
+            <div class="sp-body">
+              <div id="cw-listUI" class="checklist"></div>
+            </div>
+          </aside>
         </div>
 
         <div class="cw-pool" id="cw-pool"></div>
         <div class="st-result" id="cw-feedback"></div>
       </div>
 
-      <!-- WORD SEARCH -->
+      <!-- WORD SEARCH (condensed side panel) -->
       <div id="ws" class="hidden">
         <div class="row-top">
-          <p class="subtitle">Drag your finger (or mouse) across letters to find words.</p>
+          <p class="subtitle">Drag across letters to find words.</p>
           <span class="pill" id="ws-progress">Found: 0 / 0</span>
         </div>
 
@@ -351,30 +344,35 @@ elephant"></textarea>
           </div>
         </div>
 
-        <div class="two-col">
+        <div class="puzzle-layout">
           <div id="ws-gridWrap" class="boardWrap">
             <div id="ws-grid" class="grid" role="grid" aria-label="Word Search Grid"></div>
           </div>
-          <div class="checklist">
-            <div id="ws-wordlist-title" class="inlineTiles" aria-label="Word List"></div>
-            <div id="ws-listUI" class="ws-list"></div>
-          </div>
+
+          <aside id="ws-side" class="sidepanel collapsed">
+            <div class="sp-head">
+              <span class="sp-title pill" id="ws-wordlist-title">Words</span>
+              <button class="sp-toggle" id="ws-toggle">Show</button>
+            </div>
+            <div class="sp-body">
+              <div id="ws-listUI" class="checklist"></div>
+            </div>
+          </aside>
         </div>
 
         <div class="st-result" id="ws-feedback"></div>
       </div>
-
     </div>
   </div>
 
 <script>
-/* ---------- CSS.escape polyfill (old Safari) ---------- */
+/* ---------- Polyfill ---------- */
 if (!window.CSS || !CSS.escape) {
   window.CSS = window.CSS || {};
   CSS.escape = CSS.escape || function (v) { return String(v).replace(/[^a-zA-Z0-9_\\-]/g, '\\\\$&'); };
 }
 
-/* ---------- UI tile helpers ---------- */
+/* ---------- Tile helpers ---------- */
 function uiHue(i,total){ return Math.round((i*(360/Math.max(total,1)))%360); }
 function makeUITile(letter, i, total, cls){
   const t=document.createElement('div');
@@ -408,28 +406,13 @@ function setButtonTileLabel(btn, text, sizeClass='chipTile'){
   btn.setAttribute('aria-label', text);
 }
 
-/* ---------- Themes ---------- */
+/* ---------- Themes & Case ---------- */
 const themes = [
-  { name:"Candy", bg:"linear-gradient(120deg,#22d3ee 0%,#a78bfa 45%,#f472b6 100%)",
-    brand:"linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6)",
-    pill:"#ffffffaa", pillBrd:"#ffffff88", btn:"#ffffffcc", btnBrd:"#ffffff88",
-    slot:"#ffffff77", given:"#d1fae5" },
-  { name:"Ocean", bg:"linear-gradient(120deg,#06b6d4 0%,#3b82f6 50%,#22c55e 100%)",
-    brand:"linear-gradient(90deg,#06b6d4,#3b82f6,#22c55e)",
-    pill:"#e0f2fecc", pillBrd:"#bae6fd", btn:"#e0f2fe", btnBrd:"#93c5fd",
-    slot:"#e0f2fe88", given:"#d1fae5" },
-  { name:"Sunset", bg:"linear-gradient(120deg,#fb923c 0%,#f43f5e 50%,#8b5cf6 100%)",
-    brand:"linear-gradient(90deg,#fb923c,#f43f5e,#8b5cf6)",
-    pill:"#fff1e6cc", pillBrd:"#ffd9c9", btn:"#ffe4e6", btnBrd:"#fecaca",
-    slot:"#ffe4e688", given:"#fde68a" },
-  { name:"Forest", bg:"linear-gradient(120deg,#22c55e 0%,#16a34a 50%,#0ea5e9 100%)",
-    brand:"linear-gradient(90deg,#22c55e,#16a34a,#0ea5e9)",
-    pill:"#dcfce7cc", pillBrd:"#bbf7d0", btn:"#dcfce7", btnBrd:"#86efac",
-    slot:"#dcfce788", given:"#bbf7d0" },
-  { name:"Lemonade", bg:"linear-gradient(120deg,#fde047 0%,#facc15 50%,#f97316 100%)",
-    brand:"linear-gradient(90deg,#fde047,#facc15,#f97316)",
-    pill:"#fef9c3cc", pillBrd:"#fef08a", btn:"#fef9c3", btnBrd:"#fde047",
-    slot:"#fef9c388", given:"#fde68a" }
+  { name:"Candy", bg:"linear-gradient(120deg,#22d3ee 0%,#a78bfa 45%,#f472b6 100%)", brand:"linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6)", pill:"#ffffffaa", pillBrd:"#ffffff88", btn:"#ffffffcc", btnBrd:"#ffffff88", slot:"#ffffff77", given:"#d1fae5" },
+  { name:"Ocean", bg:"linear-gradient(120deg,#06b6d4 0%,#3b82f6 50%,#22c55e 100%)", brand:"linear-gradient(90deg,#06b6d4,#3b82f6,#22c55e)", pill:"#e0f2fecc", pillBrd:"#bae6fd", btn:"#e0f2fe", btnBrd:"#93c5fd", slot:"#e0f2fe88", given:"#d1fae5" },
+  { name:"Sunset", bg:"linear-gradient(120deg,#fb923c 0%,#f43f5e 50%,#8b5cf6 100%)", brand:"linear-gradient(90deg,#fb923c,#f43f5e,#8b5cf6)", pill:"#fff1e6cc", pillBrd:"#ffd9c9", btn:"#ffe4e6", btnBrd:"#fecaca", slot:"#ffe4e688", given:"#fde68a" },
+  { name:"Forest", bg:"linear-gradient(120deg,#22c55e 0%,#16a34a 50%,#0ea5e9 100%)", brand:"linear-gradient(90deg,#22c55e,#16a34a,#0ea5e9)", pill:"#dcfce7cc", pillBrd:"#bbf7d0", btn:"#dcfce7", btnBrd:"#86efac", slot:"#dcfce788", given:"#bbf7d0" },
+  { name:"Lemonade", bg:"linear-gradient(120deg,#fde047 0%,#facc15 50%,#f97316 100%)", brand:"linear-gradient(90deg,#fde047,#facc15,#f97316)", pill:"#fef9c3cc", pillBrd:"#fef08a", btn:"#fef9c3", btnBrd:"#fde047", slot:"#fef9c388", given:"#fde68a" }
 ];
 let themeIndex = 0;
 const themeBtn = document.getElementById('themeBtn');
@@ -452,9 +435,11 @@ function applyTheme(t){
 }
 themeBtn.addEventListener('click', ()=>{ themeIndex=(themeIndex+1)%themes.length; applyTheme(themes[themeIndex]); });
 applyTheme(themes[themeIndex]);
-setButtonTileLabel(themeBtn, 'Theme', 'chipTile');
+function setSectionLabel(text){ const sectionChip=document.getElementById('sectionChip'); sectionChip.innerHTML=''; const span=document.createElement('span'); span.className='inlineTiles'; renderTiles(span, text, 'uiLabel'); sectionChip.appendChild(span); }
+renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
+setSectionLabel('Setup');
 
-// Case toggle (visual only)
+// case
 const caseBtn = document.getElementById('caseBtn');
 setButtonTileLabel(caseBtn, 'Aa', 'chipTile');
 caseBtn.addEventListener('click', ()=>{
@@ -462,16 +447,6 @@ caseBtn.addEventListener('click', ()=>{
   const lower = document.body.classList.contains('lowercase');
   setButtonTileLabel(caseBtn, lower ? 'aa' : 'AA', 'chipTile');
 });
-
-/* ---------- Section label + hero ---------- */
-renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
-const sectionChip = document.getElementById('sectionChip');
-function setSectionLabel(text){
-  sectionChip.innerHTML='';
-  const span=document.createElement('span'); span.className='inlineTiles';
-  renderTiles(span, text, 'uiLabel');
-  sectionChip.appendChild(span);
-}
 
 /* ---------- Common helpers ---------- */
 const inputWords = document.getElementById('inputWords');
@@ -547,7 +522,7 @@ function stMakeTile(obj){
   t.style.background = `linear-gradient(180deg, hsla(${h}, 90%, 85%, .95), hsla(${h}, 95%, 75%, .95))`;
   t.style.borderColor = `hsla(${h}, 95%, 92%, .9)`;
 
-  // MOUSE drag
+  // mouse drag
   t.addEventListener('dragstart', e=>{
     enableNoSelect();
     t.classList.add('dragging'); stCurrentDragTile = t;
@@ -557,7 +532,7 @@ function stMakeTile(obj){
   });
   t.addEventListener('dragend', ()=>{ t.classList.remove('dragging'); stCurrentDragTile=null; disableNoSelect(); });
 
-  // MOUSE click-to-select (ignore if last pointer was touch)
+  // click select (ignored if last pointer was touch)
   t.addEventListener('click', ()=>{
     if (window.__lastPointerWasTouch) return;
     if(stPreviewing) return;
@@ -566,22 +541,22 @@ function stMakeTile(obj){
     stSelected=t; t.classList.add('dragging');
   });
 
-  // TOUCH drag with slop (no swap on simple tap)
+  // touch drag with slop
   t.addEventListener('pointerdown', e=>{
     if (e.pointerType!=='touch') return;
     if (stPreviewing) return;
     e.preventDefault();
     window.__lastPointerWasTouch = true;
     setTimeout(()=>{ window.__lastPointerWasTouch = false; }, 300);
-    stStartTouchDrag(t, e);  // slop-aware
+    stStartTouchDrag(t, e);
   });
 
   return t;
 }
 
-/* Touch drag with movement threshold (no immediate DOM swaps) */
+/* Touch drag with slop */
 let stDrag = null;
-const ST_DRAG_SLOP = 8; // pixels
+const ST_DRAG_SLOP = 8;
 
 function stStartTouchDrag(tile, e){
   enableNoSelect();
@@ -612,24 +587,19 @@ function stStartTouchDrag(tile, e){
     const dy = Math.abs(ev.clientY - stDrag.startY);
     if (!stDrag.started && (dx > ST_DRAG_SLOP || dy > ST_DRAG_SLOP)){
       stDrag.started = true;
-      stDrag.node.style.visibility = 'hidden'; // keep layout stable
+      stDrag.node.style.visibility = 'hidden';
     }
-    if (stDrag.started){
-      stHighlightDrop(ev.clientX, ev.clientY);
-    }
+    if (stDrag.started){ stHighlightDrop(ev.clientX, ev.clientY); }
   }
   function up(ev){
     ev.preventDefault();
     if (!stDrag) return;
     if (!stDrag.started){
-      // TAP: toggle selection only
-      stDrag.ghost.remove();
-      stDrag.node.style.visibility = '';
+      stDrag.ghost.remove(); stDrag.node.style.visibility = '';
       if(stSelected===stDrag.node){ stDrag.node.classList.remove('dragging'); stSelected=null; }
       else { if(stSelected) stSelected.classList.remove('dragging'); stSelected = stDrag.node; stDrag.node.classList.add('dragging'); }
       cleanup(); disableNoSelect(); return;
     }
-    // Real drag
     const target = stFindDropContainerAt(ev.clientX, ev.clientY);
     if (stDrag.lastTarget && stDrag.lastTarget.classList) stDrag.lastTarget.classList.remove('drop-ok');
     stDrag.ghost.remove();
@@ -641,8 +611,7 @@ function stStartTouchDrag(tile, e){
   }
   function cancel(){
     if (!stDrag) return;
-    stDrag.ghost.remove();
-    stDrag.node.style.visibility = '';
+    stDrag.ghost.remove(); stDrag.node.style.visibility = '';
     cleanup(); disableNoSelect();
   }
   function cleanup(){
@@ -681,8 +650,52 @@ function stFinishTouchDragTo(target){
   }
 }
 
+function stOnDrop(e, slot){
+  e.preventDefault(); slot.classList.remove('drop-ok');
+  const id=e.dataTransfer.getData('text/tile-id') || e.dataTransfer.getData('text/plain');
+  let tile = id ? document.querySelector(`[data-tile-id="${CSS.escape(id)}"]`) : stCurrentDragTile;
+  if(!tile) return;
+  if (slot.firstElementChild) st.pool.appendChild(slot.firstElementChild);
+  slot.appendChild(tile); stMarkFilled(); stCheckSolved(stWords[stIndex]);
+}
+function stSetTilesDraggable(enabled){ document.querySelectorAll('#st .tile').forEach(t=>t.setAttribute('draggable', enabled?'true':'false')); }
+function stSetBtnsDisabled(d){ st.reshuffleBtn.disabled=d; st.skipBtn.disabled=d; }
+function stMarkFilled(){ [...st.slots.children].forEach(s=>s.classList.toggle('filled', !!s.firstElementChild)); }
+function stGetAnswer(){ return [...st.slots.children].map(s=>s.firstElementChild ? s.firstElementChild.dataset.letter : '·').join(''); }
+function stComplete(){ return [...st.slots.children].every(s=>!!s.firstElementChild); }
+function stShowCorrect(){
+  st.feedback.className='st-result'; st.feedback.innerHTML='';
+  const span=document.createElement('div'); span.className='inlineTiles';
+  renderTiles(span, 'CORRECT', 'uiLabel');
+  st.feedback.appendChild(span);
+}
+function stCheckSolved(targetWord){
+  if (stPreviewing) return;
+  if (!stComplete()){ st.feedback.textContent=''; st.feedback.className='st-result'; return; }
+  const guess = stGetAnswer();
+  if (guess === targetWord.toUpperCase()){
+    stShowCorrect();
+    stScore++; stSolved.add(targetWord); stUpdatePills(); setTimeout(stNextWord, 650);
+  } else {
+    st.feedback.textContent='🧠 Not quite — try swapping some tiles.'; st.feedback.className='st-result bad';
+  }
+}
+function stNextWord(){
+  stIndex++; if (stIndex>=stWords.length) return stFinish();
+  stUpdatePills(); stBuildWord(stWords[stIndex]);
+}
+function stFinish(){
+  const pct = Math.round((stScore/stWords.length)*100);
+  st.summary.classList.remove('hidden');
+  st.completeText.innerHTML=''; renderTiles(st.completeText, 'COMPLETE', 'uiLabel');
+  st.final.textContent = `You scored ${stScore} of ${stWords.length}.`;
+  st.percentText.innerHTML=''; renderTiles(st.percentText, `${pct}%`, 'uiLabel');
+  st.summary.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
 function stBuildWord(word){
   stClearStage();
+  st.summary.classList.add('hidden');
 
   [...word].forEach((ch,i)=>{
     const slot=document.createElement('div');
@@ -692,7 +705,6 @@ function stBuildWord(word){
     slot.addEventListener('drop', e=> stOnDrop(e, slot));
     slot.addEventListener('click', ()=>{
       if (stPreviewing) return;
-      // Only act if a tile is selected (prevents unexpected swaps on touch)
       if (!stSelected) return;
       if (slot.firstElementChild) st.pool.appendChild(slot.firstElementChild);
       slot.appendChild(stSelected); stSelected.classList.remove('dragging'); stSelected=null;
@@ -730,47 +742,6 @@ function stBuildWord(word){
     if (existing){ st.pool.appendChild(existing); stMarkFilled(); stCheckSolved(word); }
   });
 }
-function stOnDrop(e, slot){
-  e.preventDefault(); slot.classList.remove('drop-ok');
-  const id=e.dataTransfer.getData('text/tile-id') || e.dataTransfer.getData('text/plain');
-  let tile = id ? document.querySelector(`[data-tile-id="${CSS.escape(id)}"]`) : stCurrentDragTile;
-  if(!tile) return;
-  if (slot.firstElementChild) st.pool.appendChild(slot.firstElementChild);
-  slot.appendChild(tile); stMarkFilled(); stCheckSolved(stWords[stIndex]);
-}
-function stSetTilesDraggable(enabled){ document.querySelectorAll('#st .tile').forEach(t=>t.setAttribute('draggable', enabled?'true':'false')); }
-function stSetBtnsDisabled(d){ st.reshuffleBtn.disabled=d; st.skipBtn.disabled=d; }
-function stMarkFilled(){ [...st.slots.children].forEach(s=>s.classList.toggle('filled', !!s.firstElementChild)); }
-function stGetAnswer(){ return [...st.slots.children].map(s=>s.firstElementChild ? s.firstElementChild.dataset.letter : '·').join(''); }
-function stComplete(){ return [...st.slots.children].every(s=>!!s.firstElementChild); }
-function stShowCorrect(){
-  st.feedback.className='st-result'; st.feedback.innerHTML='';
-  const span=document.createElement('div'); span.className='inlineTiles';
-  renderTiles(span, 'CORRECT', 'uiLabel');
-  st.feedback.appendChild(span);
-}
-function stCheckSolved(targetWord){
-  if (stPreviewing) return;
-  if (!stComplete()){ st.feedback.textContent=''; st.feedback.className='st-result'; return; }
-  const guess = stGetAnswer();
-  if (guess === targetWord.toUpperCase()){
-    stShowCorrect();
-    stScore++; stSolved.add(targetWord); stUpdatePills(); setTimeout(stNextWord, 650);
-  } else {
-    st.feedback.textContent='🧠 Not quite — try swapping some tiles.'; st.feedback.className='st-result bad';
-  }
-}
-function stNextWord(){
-  stIndex++; if (stIndex>=stWords.length) return stFinish();
-  stUpdatePills(); stBuildWord(stWords[stIndex]);
-}
-function stFinish(){
-  const pct = Math.round((stScore/stWords.length)*100);
-  st.summary.style.display='block';
-  st.completeText.innerHTML=''; renderTiles(st.completeText, 'COMPLETE', 'uiLabel');
-  st.final.textContent = `You scored ${stScore} of ${stWords.length}.`;
-  st.percentText.innerHTML=''; renderTiles(st.percentText, `${pct}%`, 'uiLabel');
-}
 st.reshuffleBtn.addEventListener('click', ()=>{
   if (stPreviewing) return;
   [...st.slots.querySelectorAll('.tile')].forEach(t=>st.pool.appendChild(t));
@@ -780,7 +751,7 @@ st.reshuffleBtn.addEventListener('click', ()=>{
 });
 st.skipBtn.addEventListener('click', ()=>{ if(!stPreviewing) stNextWord(); });
 st.retryBtn.addEventListener('click', ()=>{
-  stIndex=0; stScore=0; stSolved.clear(); st.summary.style.display='none';
+  stIndex=0; stScore=0; stSolved.clear(); st.summary.classList.add('hidden');
   stUpdatePills(); stBuildWord(stWords[0]);
 });
 st.editBtn.addEventListener('click', ()=> showOnly('setup'));
@@ -807,22 +778,28 @@ startSpellingBtn.addEventListener('click', ()=>{
 
 /* ===================== CROSSWORD ===================== */
 const cw = {
-  root: document.getElementById('cw'),
   board: document.getElementById('cw-board'),
   pool: document.getElementById('cw-pool'),
   feedback: document.getElementById('cw-feedback'),
   progress: document.getElementById('cw-progress'),
   listUI: document.getElementById('cw-listUI'),
-  reshuffleBtn: document.getElementById('cw-reshuffleBtn'),
-  backBtn: document.getElementById('cw-backToSetup'),
-  wordTitle: document.getElementById('cw-wordlist-title'),
+  toggleBtn: document.getElementById('cw-toggle'),
+  side: document.getElementById('cw-side'),
 };
-renderTiles(cw.wordTitle, 'WORD LIST', 'chipTile');
-
 let wordNodesByIndex = new Map();
 let wordListItems = new Map();
 const COLOR_WORDS = ["PURPLE","GREEN","BLUE","RED","ORANGE","YELLOW","PINK","BLACK","WHITE","BROWN","GREY"];
 let usedColors = new Set();
+
+document.getElementById('cw-backToSetup').addEventListener('click', ()=> showOnly('setup') );
+document.getElementById('cw-reshuffleBtn').addEventListener('click', ()=>{
+  const left=Array.from(cw.pool.children);
+  left.sort(()=>Math.random()-.5).forEach(n=>cw.pool.appendChild(n));
+});
+cw.toggleBtn.addEventListener('click', ()=>{
+  cw.side.classList.toggle('collapsed');
+  cw.toggleBtn.textContent = cw.side.classList.contains('collapsed') ? 'Show' : 'Hide';
+});
 
 function buildCrossword(rawWords, MAX=40){
   const words = rawWords.map(w=>w.toUpperCase()).filter(Boolean);
@@ -912,6 +889,7 @@ function buildCrossword(rawWords, MAX=40){
     return false;
   }
 
+  const words = rawWords.map(w=>w.toUpperCase()).filter(Boolean).sort((a,b)=>b.length-a.length);
   if (words.length) place(words[0],0,0,'across',0);
   let nextRow=2, nextCol=-2;
   for (let wi=1; wi<words.length; wi++){
@@ -937,13 +915,16 @@ function buildCrossword(rawWords, MAX=40){
 
 function cwUpdateProgress(){ cw.progress.textContent=`Completed: ${document.querySelectorAll('#cw .wordItem.done').length} / ${document.querySelectorAll('#cw .wordItem').length}`; }
 function cwBuildChecklist(words){
-  cw.listUI.innerHTML=''; wordListItems.clear();
+  cw.listUI.innerHTML='';
+  wordListItems.clear();
   words.forEach((w,wi)=>{
     const item=document.createElement('div'); item.className='wordItem'; item.dataset.wi=wi;
     item.innerHTML=`<div class="mark">•</div><div class="txt">${w}</div>`;
     cw.listUI.appendChild(item); wordListItems.set(wi,item);
   });
   cwUpdateProgress();
+  // Update sidepanel header count
+  document.getElementById('cw-wordlist-title').textContent = `Words (${words.length})`;
 }
 function cwMarkDone(wi){
   const el=wordListItems.get(wi);
@@ -1091,18 +1072,6 @@ function cwHighlight(x,y){ const t=cwFindSlotAt(x,y); if (cwDrag?.lastTarget?.cl
 function cwDropTouch(x,y){ if (!cwDrag) return; const cell=cwFindSlotAt(x,y); cwDrag.ghost.remove(); if (cell) cwPlaceTileIntoCell(cwDrag.node, cell); cwDrag=null; }
 function cwCancelTouch(){ if (!cwDrag) return; cwDrag.ghost.remove(); cwDrag=null; }
 
-document.getElementById('cw-reshuffleBtn').addEventListener('click', ()=>{
-  const left=Array.from(cw.pool.children);
-  left.sort(()=>Math.random()-.5).forEach(n=>cw.pool.appendChild(n));
-});
-renderTiles(document.getElementById('cw-wordlist-title'), 'WORD LIST', 'chipTile');
-document.getElementById('cw-backToSetup').addEventListener('click', ()=> showOnly('setup') );
-buildCrosswordBtn.addEventListener('click', ()=>{
-  const words = parseWords(inputWords.value);
-  if (!words.length){ alert('Please enter at least one word.'); return; }
-  const cap = parseInt(capInput.value,10) || 12;
-  startCrosswordFlow(pickCap(words, cap));
-});
 function startCrosswordFlow(words){
   usedColors = new Set();
   const clue = parseInt(cluePct.value,10) || 30;
@@ -1115,33 +1084,27 @@ function startCrosswordFlow(words){
 
 /* ===================== WORD SEARCH ===================== */
 const ws = {
-  root: document.getElementById('ws'),
   grid: document.getElementById('ws-grid'),
   feedback: document.getElementById('ws-feedback'),
   progress: document.getElementById('ws-progress'),
   listUI: document.getElementById('ws-listUI'),
-  backBtn: document.getElementById('ws-backToSetup'),
-  reshuffleBtn: document.getElementById('ws-reshuffleBtn'),
-  wordTitle: document.getElementById('ws-wordlist-title'),
+  toggleBtn: document.getElementById('ws-toggle'),
+  side: document.getElementById('ws-side'),
 };
-renderTiles(ws.wordTitle, 'WORD LIST', 'chipTile');
+let wsState=null;
 
-let wsState=null; // {size, grid, wordsPlaced, found:Set}
-
-buildWordSearchBtn.addEventListener('click', ()=>{
-  const words = parseWords(inputWords.value);
-  if (!words.length){ alert('Please enter at least one word.'); return; }
-  const cap = parseInt(capInput.value,10) || 12;
-  startWordSearchFlow(pickCap(words, cap));
-});
-ws.backBtn.addEventListener('click', ()=> showOnly('setup') );
-ws.reshuffleBtn.addEventListener('click', ()=>{
+document.getElementById('ws-backToSetup').addEventListener('click', ()=> showOnly('setup') );
+document.getElementById('ws-reshuffleBtn').addEventListener('click', ()=>{
   if (!wsState) return;
   startWordSearchFlow(wsState.wordsPlaced.map(w=>w.word));
 });
+ws.toggleBtn.addEventListener('click', ()=>{
+  ws.side.classList.toggle('collapsed');
+  ws.toggleBtn.textContent = ws.side.classList.contains('collapsed') ? 'Show' : 'Hide';
+});
 
 function startWordSearchFlow(words){
-  const maxSize = Math.max(8, Math.min(16, parseInt(wsMaxEl.value,10) || 16)); // clamp 8..16
+  const maxSize = Math.max(8, Math.min(16, parseInt(wsMaxEl.value,10) || 16));
   const allowDiag = !!wsDiagEl.checked;
   const allowBack = !!wsBackEl.checked;
   wsState = buildWordSearch(words, maxSize, {allowDiag, allowBack});
@@ -1149,7 +1112,6 @@ function startWordSearchFlow(words){
   wsRender(wsState);
 }
 
-/* Build Word Search grid up to maxSize, excluding unfittable words */
 function buildWordSearch(rawWords, maxSize, opts){
   const words = rawWords.map(w=>w.toUpperCase());
   const longest = Math.max(6, ...words.map(w=>w.length));
@@ -1164,7 +1126,6 @@ function buildWordSearch(rawWords, maxSize, opts){
   function attempt(size){
     const grid = Array.from({length:size}, ()=> Array.from({length:size}, ()=> null));
     const inside=(r,c)=> r>=0 && r<size && c>=0 && c<size;
-
     const order = words.slice().sort((a,b)=>b.length-a.length);
     const placed=[];
     function tryPlace(word){
@@ -1186,10 +1147,7 @@ function buildWordSearch(rawWords, maxSize, opts){
           if (ch && ch!==word[i]) { ok=false; break; }
         }
         if (!ok) continue;
-        for (let i=0;i<len;i++){
-          const rr=r+i*dir[1], cc=c+i*dir[0];
-          grid[rr][cc]=word[i];
-        }
+        for (let i=0;i<len;i++){ const rr=r+i*dir[1], cc=c+i*dir[0]; grid[rr][cc]=word[i]; }
         placed.push({word, r, c, dir, len});
         return true;
       }
@@ -1216,15 +1174,14 @@ function wsRender(state){
   ws.listUI.innerHTML='';
   const words = state.wordsPlaced.map(w=>w.word);
   const unique = Array.from(new Set(words));
-  const items=new Map();
   unique.forEach(w=>{
     const it=document.createElement('div'); it.className='wordItem'; it.innerHTML=`<div class="mark">•</div><div class="txt">${w}</div>`;
-    ws.listUI.appendChild(it); items.set(w,it);
+    ws.listUI.appendChild(it);
   });
+  document.getElementById('ws-wordlist-title').textContent = `Words (${unique.length})`;
 
   ws.grid.innerHTML='';
   ws.grid.style.gridTemplateColumns = `repeat(${state.size}, auto)`;
-  const cellRefs = Array.from({length:state.size}, ()=> Array.from({length:state.size}, ()=> null));
   for (let r=0;r<state.size;r++){
     for (let c=0;c<state.size;c++){
       const d=document.createElement('div');
@@ -1232,7 +1189,6 @@ function wsRender(state){
       d.textContent=state.grid[r][c];
       d.dataset.r=r; d.dataset.c=c;
       ws.grid.appendChild(d);
-      cellRefs[r][c]=d;
     }
   }
 
@@ -1255,10 +1211,7 @@ function wsRender(state){
   function getCell(el){ return (el && el.classList && el.classList.contains('gcell')) ? el : null; }
   function norm(x){ return x===0?0:(x>0?1:-1); }
 
-  function beginAt(el){
-    dragging=true; enableNoSelect();
-    path=[el]; el.classList.add('sel');
-  }
+  function beginAt(el){ dragging=true; enableNoSelect(); path=[el]; el.classList.add('sel'); }
   function extendTo(el){
     if (!dragging) return;
     const first = path[0], last = path[path.length-1];
@@ -1293,14 +1246,10 @@ function wsRender(state){
         renderTiles(span, 'WELL  DONE', 'chipTile');
         ws.feedback.appendChild(span);
       }
-    } else {
-      for (const el of path){ el.classList.remove('sel'); }
-    }
+    } else { for (const el of path){ el.classList.remove('sel'); } }
     path=[];
   }
-  function wsUpdateProgress(){
-    ws.progress.textContent = `Found: ${state.found.size} / ${unique.length}`;
-  }
+  function wsUpdateProgress(){ ws.progress.textContent = `Found: ${state.found.size} / ${unique.length}`; }
   wsUpdateProgress();
 
   ws.grid.addEventListener('pointerdown', (e)=>{
@@ -1328,10 +1277,31 @@ function showOnly(id){
   setSectionLabel(label);
 }
 
-/* boot */
-setSectionLabel('Setup');
+/* ---------- Build buttons ---------- */
+buildCrosswordBtn.addEventListener('click', ()=>{
+  const words = parseWords(inputWords.value);
+  if (!words.length){ alert('Please enter at least one word.'); return; }
+  const cap = parseInt(capInput.value,10) || 12;
+  startCrosswordFlow(pickCap(words, cap));
+});
+buildWordSearchBtn.addEventListener('click', ()=>{
+  const words = parseWords(inputWords.value);
+  if (!words.length){ alert('Please enter at least one word.'); return; }
+  const cap = parseInt(capInput.value,10) || 12;
+  startWordSearchFlow(pickCap(words, cap));
+});
+
+/* ---------- Title tiles ---------- */
 setButtonTileLabel(themeBtn, 'Theme', 'chipTile');
 renderTitle(document.getElementById('heroTitle'), 'Spelling Tiles', 'titleTile');
+
+/* ---------- Build word on load from ST ---------- */
+function stBuildWordSafe(){
+  if (!stWords.length) return;
+  stUpdatePills(); stBuildWord(stWords[0]);
+}
+
+/* ---------- Crossword / Word Search start hooks (from ST summary) exist above ---------- */
 </script>
 </body>
 </html>
